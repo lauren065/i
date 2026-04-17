@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import tracks from '../lib/tracks.json';
 
 type Track = {
@@ -87,7 +88,7 @@ export default function Studio() {
       </Head>
       <div className="studio">
         <header>
-          <a href="/" className="back">← cheolm.in</a>
+          <Link href="/" className="back">← cheolm.in</Link>
         </header>
         <main>
           {SECTION_ORDER.filter((s) => sections[s]).map((section) => (

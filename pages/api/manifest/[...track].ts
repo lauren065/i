@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
-import path from 'path';
 import { signResourcePattern, getCfBaseUrl } from '../../../lib/cf-signer';
+import { hlsPath } from '../../../lib/state';
 
 // Guard against path traversal — only [a-z0-9-/] slugs allowed
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*$/;
@@ -16,10 +16,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: 'invalid slug format' });
   }
 
-  const m3u8Path = path.join(process.cwd(), 'lib', 'hls', slug, 'index.m3u8');
   let m3u8: string;
   try {
-    m3u8 = fs.readFileSync(m3u8Path, 'utf-8');
+    m3u8 = fs.readFileSync(hlsPath(slug), 'utf-8');
   } catch {
     return res.status(404).json({ error: 'track not found' });
   }

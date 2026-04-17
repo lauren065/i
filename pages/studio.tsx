@@ -1,17 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import tracks from '../lib/tracks.json';
-
-type Track = {
-  id: string;
-  title: string;
-  section: string;
-  sectionSlug: string;
-  titleSlug: string;
-  srcRel: string;
-  duration: number;
-};
+import type { GetServerSideProps } from 'next';
+import { readTracks, Track } from '../lib/state';
 
 const SECTION_ORDER = ['Disc 1', 'Disc 2', 'Disc 3', 'Pure WInter', 'Singles'];
 
@@ -22,7 +13,11 @@ function formatTime(sec: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function Studio() {
+export const getServerSideProps: GetServerSideProps<{ tracks: Track[] }> = async () => {
+  return { props: { tracks: readTracks() } };
+};
+
+export default function Studio({ tracks }: { tracks: Track[] }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const hlsRef = useRef<any>(null);
   const [current, setCurrent] = useState<string | null>(null);

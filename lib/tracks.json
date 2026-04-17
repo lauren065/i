@@ -1,0 +1,380 @@
+[
+  {
+    "id": "singles/230403-japan-loop",
+    "title": "230403_japan_loop",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "230403-japan-loop",
+    "srcRel": "studio/230403_japan_loop.mp3",
+    "duration": 107.304
+  },
+  {
+    "id": "singles/230729-classic-loop",
+    "title": "230729_classic_loop",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "230729-classic-loop",
+    "srcRel": "studio/230729_classic_loop.mp3",
+    "duration": 96.0
+  },
+  {
+    "id": "singles/230925-soul-samp",
+    "title": "230925_soul_samp",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "230925-soul-samp",
+    "srcRel": "studio/230925_soul_samp.mp3",
+    "duration": 49.872
+  },
+  {
+    "id": "singles/231005-smpl-chp",
+    "title": "231005_smpl_chp",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "231005-smpl-chp",
+    "srcRel": "studio/231005_smpl_chp.mp3",
+    "duration": 96.0
+  },
+  {
+    "id": "disc-1/balad-piano",
+    "title": "Balad Piano",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "balad-piano",
+    "srcRel": "studio/Disc 1/Balad Piano.mp3",
+    "duration": 128.0192
+  },
+  {
+    "id": "disc-1/dayafter",
+    "title": "Dayafter",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "dayafter",
+    "srcRel": "studio/Disc 1/Dayafter.mp3",
+    "duration": 132.0032
+  },
+  {
+    "id": "disc-1/dear-my-hometown-banpo",
+    "title": "Dear my hometown, Banpo",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "dear-my-hometown-banpo",
+    "srcRel": "studio/Disc 1/Dear my hometown, Banpo.wav",
+    "duration": 133.565208
+  },
+  {
+    "id": "disc-1/disney",
+    "title": "Disney",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "disney",
+    "srcRel": "studio/Disc 1/Disney.mp3",
+    "duration": 106.6832
+  },
+  {
+    "id": "disc-1/fukushima",
+    "title": "Fukushima",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "fukushima",
+    "srcRel": "studio/Disc 1/Fukushima.mp3",
+    "duration": 176.0192
+  },
+  {
+    "id": "disc-1/greenlamp",
+    "title": "Greenlamp",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "greenlamp",
+    "srcRel": "studio/Disc 1/Greenlamp.wav",
+    "duration": 371.80725
+  },
+  {
+    "id": "disc-1/why-you-runaway",
+    "title": "Why You Runaway",
+    "section": "Disc 1",
+    "sectionSlug": "disc-1",
+    "titleSlug": "why-you-runaway",
+    "srcRel": "studio/Disc 1/Why You Runaway.wav",
+    "duration": 142.222229
+  },
+  {
+    "id": "disc-2/choir-loop",
+    "title": "Choir Loop",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "choir-loop",
+    "srcRel": "studio/Disc 2/Choir Loop.wav",
+    "duration": 192.0
+  },
+  {
+    "id": "disc-2/daylight-walking",
+    "title": "Daylight Walking",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "daylight-walking",
+    "srcRel": "studio/Disc 2/Daylight Walking.mp3",
+    "duration": 192.0032
+  },
+  {
+    "id": "disc-2/lofi-wet",
+    "title": "Lofi Wet",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "lofi-wet",
+    "srcRel": "studio/Disc 2/Lofi Wet.wav",
+    "duration": 176.476583
+  },
+  {
+    "id": "disc-2/onsen",
+    "title": "Onsen",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "onsen",
+    "srcRel": "studio/Disc 2/Onsen.mp3",
+    "duration": 128.0192
+  },
+  {
+    "id": "disc-2/skylight",
+    "title": "Skylight",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "skylight",
+    "srcRel": "studio/Disc 2/Skylight.mp3",
+    "duration": 192.0032
+  },
+  {
+    "id": "disc-2/trap-loop-101",
+    "title": "Trap Loop 101",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "trap-loop-101",
+    "srcRel": "studio/Disc 2/Trap Loop 101.mp3",
+    "duration": 156.0032
+  },
+  {
+    "id": "disc-2/welcome-to-my-life",
+    "title": "Welcome To My Life",
+    "section": "Disc 2",
+    "sectionSlug": "disc-2",
+    "titleSlug": "welcome-to-my-life",
+    "srcRel": "studio/Disc 2/Welcome To My Life.wav",
+    "duration": 134.26575
+  },
+  {
+    "id": "disc-3/cover-loop",
+    "title": "Cover Loop",
+    "section": "Disc 3",
+    "sectionSlug": "disc-3",
+    "titleSlug": "cover-loop",
+    "srcRel": "studio/Disc 3/Cover Loop.mp3",
+    "duration": 76.8
+  },
+  {
+    "id": "disc-3/glory",
+    "title": "Glory",
+    "section": "Disc 3",
+    "sectionSlug": "disc-3",
+    "titleSlug": "glory",
+    "srcRel": "studio/Disc 3/Glory.mp3",
+    "duration": 272.02115
+  },
+  {
+    "id": "disc-3/i-love-you-jesus",
+    "title": "I Love You Jesus",
+    "section": "Disc 3",
+    "sectionSlug": "disc-3",
+    "titleSlug": "i-love-you-jesus",
+    "srcRel": "studio/Disc 3/I Love You Jesus.wav",
+    "duration": 104.727292
+  },
+  {
+    "id": "disc-3/minimal-rohdes-jazz",
+    "title": "Minimal Rohdes Jazz",
+    "section": "Disc 3",
+    "sectionSlug": "disc-3",
+    "titleSlug": "minimal-rohdes-jazz",
+    "srcRel": "studio/Disc 3/Minimal Rohdes Jazz.mp3",
+    "duration": 91.008
+  },
+  {
+    "id": "disc-3/rebirth",
+    "title": "Rebirth",
+    "section": "Disc 3",
+    "sectionSlug": "disc-3",
+    "titleSlug": "rebirth",
+    "srcRel": "studio/Disc 3/Rebirth.mp3",
+    "duration": 171.144
+  },
+  {
+    "id": "singles/father",
+    "title": "Father",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "father",
+    "srcRel": "studio/Father.mp3",
+    "duration": 136.632
+  },
+  {
+    "id": "singles/jazzy-vibe",
+    "title": "Jazzy Vibe",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "jazzy-vibe",
+    "srcRel": "studio/Jazzy Vibe.mp3",
+    "duration": 260.88
+  },
+  {
+    "id": "singles/melody-from-sky",
+    "title": "Melody From Sky",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "melody-from-sky",
+    "srcRel": "studio/Melody From Sky.mp3",
+    "duration": 144.0
+  },
+  {
+    "id": "singles/night-guitar-loop",
+    "title": "Night Guitar Loop",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "night-guitar-loop",
+    "srcRel": "studio/Night Guitar Loop.wav",
+    "duration": 64.0
+  },
+  {
+    "id": "singles/ochestral",
+    "title": "Ochestral",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "ochestral",
+    "srcRel": "studio/Ochestral.wav",
+    "duration": 61.071438
+  },
+  {
+    "id": "pure-winter/christmas-carol-stem",
+    "title": "Christmas Carol Stem",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "christmas-carol-stem",
+    "srcRel": "studio/Pure WInter/Christmas Carol Stem.mp3",
+    "duration": 84.0391
+  },
+  {
+    "id": "pure-winter/dear-my-hometown-banpo",
+    "title": "Dear my hometown, Banpo",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "dear-my-hometown-banpo",
+    "srcRel": "studio/Pure WInter/Dear my hometown, Banpo.mp3",
+    "duration": 134.483667
+  },
+  {
+    "id": "pure-winter/pure-clouds",
+    "title": "Pure Clouds",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "pure-clouds",
+    "srcRel": "studio/Pure WInter/Pure Clouds.mp3",
+    "duration": 102.438667
+  },
+  {
+    "id": "pure-winter/spring-1",
+    "title": "Spring 1",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "spring-1",
+    "srcRel": "studio/Pure WInter/Spring 1.mp3",
+    "duration": 40.085756
+  },
+  {
+    "id": "pure-winter/spring-2",
+    "title": "Spring 2",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "spring-2",
+    "srcRel": "studio/Pure WInter/Spring 2.mp3",
+    "duration": 69.255922
+  },
+  {
+    "id": "pure-winter/spring-3",
+    "title": "Spring 3",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "spring-3",
+    "srcRel": "studio/Pure WInter/Spring 3.mp3",
+    "duration": 128.064792
+  },
+  {
+    "id": "pure-winter/wantless",
+    "title": "Wantless",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "wantless",
+    "srcRel": "studio/Pure WInter/Wantless.mp3",
+    "duration": 80.706125
+  },
+  {
+    "id": "pure-winter/wish-you-a-christmas",
+    "title": "Wish You a Christmas",
+    "section": "Pure WInter",
+    "sectionSlug": "pure-winter",
+    "titleSlug": "wish-you-a-christmas",
+    "srcRel": "studio/Pure WInter/Wish You a Christmas.mp3",
+    "duration": 85.460422
+  },
+  {
+    "id": "singles/sample-n-bass",
+    "title": "Sample N Bass",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "sample-n-bass",
+    "srcRel": "studio/Sample N Bass.mp3",
+    "duration": 141.744
+  },
+  {
+    "id": "singles/stairway-in-the-air",
+    "title": "Stairway In The Air",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "stairway-in-the-air",
+    "srcRel": "studio/Stairway In The Air.mp3",
+    "duration": 122.88515
+  },
+  {
+    "id": "singles/twilight",
+    "title": "Twilight",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "twilight",
+    "srcRel": "studio/Twilight.wav",
+    "duration": 110.76925
+  },
+  {
+    "id": "singles/waltz-loop",
+    "title": "Waltz Loop",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "waltz-loop",
+    "srcRel": "studio/Waltz Loop.mp3",
+    "duration": 123.432
+  },
+  {
+    "id": "singles/japan-string-add",
+    "title": "japan_string_add",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "japan-string-add",
+    "srcRel": "studio/japan_string_add.mp3",
+    "duration": 172.8
+  },
+  {
+    "id": "singles/string-loop-demo",
+    "title": "string_loop_demo",
+    "section": "Singles",
+    "sectionSlug": "singles",
+    "titleSlug": "string-loop-demo",
+    "srcRel": "studio/string_loop_demo.mp3",
+    "duration": 135.53315
+  }
+]

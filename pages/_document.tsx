@@ -6,14 +6,7 @@ export default function Document() {
       <Head></Head>
       <link rel="icon" href="/favicon.ico" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <body
-        style={{
-          overflow: "hidden",
-          position: "relative",
-          backgroundColor: "black",
-          height: "100vh",
-        }}
-      >
+      <body style={{ backgroundColor: "black" }}>
         <Main />
         <NextScript />
       </body>

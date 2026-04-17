@@ -1,0 +1,16 @@
+@keyframes blink144 {
+  0%, 100% { color: var(--color-fg); }
+  50% { color: #cccccc; }
+}
+
+.span {
+  display: inline-block;
+  padding: 20px 100px;
+  animation: blink144 832ms infinite; /* 144 BPM */
+  cursor: pointer;
+}
+
+.flash {
+  animation: none;
+  color: var(--color-fg);
+}

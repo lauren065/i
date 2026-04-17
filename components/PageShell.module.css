@@ -1,0 +1,23 @@
+.shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.container {
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-6) var(--space-20);
+}
+
+.narrow { max-width: var(--layout-narrow); }
+.medium { max-width: var(--layout-medium); }
+.full { max-width: none; }
+
+.centered {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}

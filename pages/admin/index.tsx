@@ -1,9 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readAdminClaims, AdminClaims } from '../../lib/auth';
 import { readTracks, Track } from '../../lib/state';
+import {
+  PageShell,
+  AppHeader,
+  HeaderLink,
+  headerLinkClassName,
+  Heading,
+  Label,
+  Button,
+  LinkButton,
+  TextInput,
+  Field,
+  FieldActions,
+  ProgressBar,
+  TrackSection,
+  AdminTrackRow,
+} from '../../components';
+import styles from './Admin.module.css';
 
 type Props =
   | { authed: true; admin: AdminClaims; initialTracks: Track[] }
@@ -23,40 +40,16 @@ export default function Admin(props: Props) {
 function LoginGate() {
   return (
     <>
-      <Head>
-        <title>admin · cheolm.in</title>
-      </Head>
-      <div className="login">
-        <h1>admin</h1>
-        <p>access restricted</p>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/api/auth/google" className="btn">Sign in with Google</a>
-      </div>
-      <style jsx>{`
-        :global(body) { margin: 0; background: #0a0a0a; color: #fff; }
-        .login {
-          font-family: -apple-system, monospace;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 20px;
-        }
-        h1 { font-size: 13px; font-weight: normal; letter-spacing: 3px; text-transform: uppercase; margin: 0; }
-        p { font-size: 11px; color: #666; margin: 0; }
-        .btn {
-          display: inline-block;
-          padding: 10px 20px;
-          background: #fff;
-          color: #000;
-          text-decoration: none;
-          font-size: 12px;
-          border-radius: 2px;
-          margin-top: 8px;
-        }
-        .btn:hover { background: #eee; }
-      `}</style>
+      <Head><title>admin · cheolm.in</title></Head>
+      <PageShell centered>
+        <div className={styles.loginCard}>
+          <Heading level={1}>admin</Heading>
+          <span className={styles.loginSub}>access restricted</span>
+          <LinkButton href="/api/auth/google" variant="primary" size="md">
+            Sign in with Google
+          </LinkButton>
+        </div>
+      </PageShell>
     </>
   );
 }
@@ -98,11 +91,8 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve();
           else {
-            try {
-              reject(new Error(JSON.parse(xhr.responseText).error || `HTTP ${xhr.status}`));
-            } catch {
-              reject(new Error(`HTTP ${xhr.status}`));
-            }
+            try { reject(new Error(JSON.parse(xhr.responseText).error || `HTTP ${xhr.status}`)); }
+            catch { reject(new Error(`HTTP ${xhr.status}`)); }
           }
         };
         xhr.onerror = () => reject(new Error('network error'));
@@ -111,7 +101,8 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
       });
       await refresh();
       setForm({ title: '', section: '', file: null });
-      (document.getElementById('file-input') as HTMLInputElement).value = '';
+      const input = document.getElementById('file-input') as HTMLInputElement | null;
+      if (input) input.value = '';
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -148,37 +139,27 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
   };
 
   const existingSections = Array.from(new Set(tracks.map((t) => t.section)));
-
-  // Group for display
   const grouped: Record<string, Track[]> = {};
-  tracks.forEach((t) => {
-    (grouped[t.section] ||= []).push(t);
-  });
+  tracks.forEach((t) => { (grouped[t.section] ||= []).push(t); });
 
   return (
     <>
-      <Head>
-        <title>admin · cheolm.in</title>
-      </Head>
-      <div className="admin">
-        <header>
-          <div>
-            <span className="label">admin</span>
-            <span className="who">{admin.email}</span>
-          </div>
-          <div className="nav">
-            <Link href="/studio" className="link">studio →</Link>
+      <Head><title>admin · cheolm.in</title></Head>
+      <PageShell width="medium">
+        <AppHeader
+          left={<><Label>admin</Label><span className={styles.who}>{admin.email}</span></>}
+          right={<>
+            <Link href="/studio" className={headerLinkClassName}>studio →</Link>
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/api/auth/logout" className="link">logout</a>
-          </div>
-        </header>
+            <HeaderLink href="/api/auth/logout">logout</HeaderLink>
+          </>}
+        />
 
-        <section className="upload">
-          <h2>Upload new track</h2>
+        <section className={styles.upload}>
+          <Heading level={2}>Upload new track</Heading>
           <form onSubmit={upload}>
-            <div className="row">
-              <label>Section</label>
-              <input
+            <Field label="Section">
+              <TextInput
                 list="sections"
                 value={form.section}
                 onChange={(e) => setForm({ ...form, section: e.target.value })}
@@ -188,136 +169,59 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
               <datalist id="sections">
                 {existingSections.map((s) => <option key={s} value={s} />)}
               </datalist>
-            </div>
-            <div className="row">
-              <label>Title</label>
-              <input
+            </Field>
+            <Field label="Title">
+              <TextInput
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="Track title"
                 disabled={uploading}
               />
-            </div>
-            <div className="row">
-              <label>File</label>
-              <input
+            </Field>
+            <Field label="File">
+              <TextInput
                 id="file-input"
                 type="file"
                 accept=".mp3,.wav,.m4a,.flac,.ogg,audio/*"
                 onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })}
                 disabled={uploading}
               />
-            </div>
-            <div className="row">
-              <button type="submit" disabled={uploading}>
+            </Field>
+            <FieldActions>
+              <Button type="submit" disabled={uploading}>
                 {uploading ? `Uploading ${progress.toFixed(0)}%…` : 'Upload + transcode'}
-              </button>
-              {error && <span className="error">{error}</span>}
-            </div>
+              </Button>
+              {error && <span className={styles.error}>{error}</span>}
+            </FieldActions>
             {uploading && progress > 0 && (
-              <div className="progress"><div className="bar" style={{ width: `${progress}%` }} /></div>
+              <div className={styles.progressWrap}><ProgressBar value={progress} /></div>
             )}
           </form>
-          <p className="hint">Upload triggers ffmpeg HLS transcoding + S3 upload. Large files (50MB+) take longer.</p>
+          <p className={styles.hint}>
+            Upload triggers ffmpeg HLS transcoding + S3 upload. Large files (50MB+) take longer.
+          </p>
         </section>
 
-        <section className="list">
-          <h2>Tracks ({tracks.length})</h2>
+        <section>
+          <Heading level={2}>Tracks ({tracks.length})</Heading>
           {Object.entries(grouped).map(([section, items]) => (
-            <div key={section} className="section">
-              <h3>{section}</h3>
-              <ul>
-                {items.map((t) => (
-                  <li key={t.id}>
-                    <span className="title">{t.title}</span>
-                    <span className="id">{t.id}</span>
-                    <span className="dur">{Math.floor(t.duration / 60)}:{String(Math.floor(t.duration % 60)).padStart(2, '0')}</span>
-                    <span className="actions">
-                      <button onClick={() => editTrack(t.id)}>edit</button>
-                      <button onClick={() => deleteTrack(t.id)} className="danger">delete</button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <TrackSection key={section} title={section}>
+              {items.map((t) => (
+                <AdminTrackRow
+                  key={t.id}
+                  track={t}
+                  actions={
+                    <>
+                      <Button variant="secondary" size="sm" onClick={() => editTrack(t.id)}>edit</Button>
+                      <Button variant="danger" size="sm" onClick={() => deleteTrack(t.id)}>delete</Button>
+                    </>
+                  }
+                />
+              ))}
+            </TrackSection>
           ))}
         </section>
-      </div>
-      <style jsx>{`
-        :global(body) { margin: 0; background: #0a0a0a; color: #fff; }
-        .admin {
-          font-family: -apple-system, 'Helvetica Neue', monospace;
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 32px 24px 80px;
-          font-size: 13px;
-        }
-        header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-bottom: 20px;
-          border-bottom: 1px solid #222;
-          margin-bottom: 30px;
-        }
-        .label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #fff; margin-right: 16px; }
-        .who { font-size: 11px; color: #888; }
-        .nav { display: flex; gap: 16px; }
-        .link { color: #888; text-decoration: none; font-size: 11px; }
-        .link:hover { color: #fff; }
-
-        h2 { font-size: 11px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; color: #888; margin: 0 0 12px; }
-        h3 { font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; color: #555; margin: 18px 0 8px; }
-
-        .upload { margin-bottom: 40px; padding: 18px; background: #141414; border: 1px solid #222; border-radius: 4px; }
-        .row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; }
-        .row label { width: 80px; color: #888; font-size: 11px; flex-shrink: 0; }
-        .row input[type=text], .row input:not([type]) {
-          flex: 1;
-          background: #000;
-          border: 1px solid #333;
-          padding: 8px 10px;
-          color: #fff;
-          font-size: 12px;
-          border-radius: 2px;
-          font-family: inherit;
-        }
-        .row input[type=file] { color: #aaa; font-size: 11px; }
-        button {
-          background: #fff;
-          color: #000;
-          border: none;
-          padding: 8px 14px;
-          font-size: 11px;
-          cursor: pointer;
-          border-radius: 2px;
-          font-family: inherit;
-        }
-        button:disabled { opacity: 0.4; cursor: not-allowed; }
-        button.danger { background: #3a0f0f; color: #ff9090; }
-        button.danger:hover { background: #5a1515; }
-        .error { color: #ff7070; font-size: 11px; margin-left: 12px; }
-        .progress { height: 2px; background: #222; margin-top: 6px; border-radius: 1px; overflow: hidden; }
-        .progress .bar { height: 100%; background: #fff; transition: width 0.2s; }
-        .hint { color: #555; font-size: 10px; margin-top: 8px; }
-
-        .list ul { list-style: none; padding: 0; margin: 0; }
-        .list li {
-          display: grid;
-          grid-template-columns: 1fr auto auto auto;
-          gap: 14px;
-          align-items: center;
-          padding: 8px 10px;
-          border-bottom: 1px solid #161616;
-          font-size: 12px;
-        }
-        .list .title { color: #fff; }
-        .list .id { color: #555; font-size: 10px; font-family: monospace; }
-        .list .dur { color: #666; font-size: 11px; font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
-        .list .actions { display: flex; gap: 6px; }
-        .list .actions button { padding: 4px 8px; font-size: 10px; background: #222; color: #ccc; }
-        .list .actions button:hover { background: #333; color: #fff; }
-      `}</style>
+      </PageShell>
     </>
   );
 }

@@ -1,0 +1,27 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-8);
+  gap: var(--space-4);
+}
+
+.left, .right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.link {
+  color: var(--color-fg-subtle);
+  font-size: var(--text-sm);
+  transition: color var(--duration-fast) var(--easing);
+}
+.link:hover { color: var(--color-fg); }
+
+.simple {
+  margin-bottom: var(--space-12);
+}
+.simple .link { font-size: var(--text-sm); }

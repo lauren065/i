@@ -1,0 +1,74 @@
+.entry {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.entryHeader { margin-bottom: var(--space-4); }
+
+.notes {
+  color: var(--color-fg-dim);
+  font-size: var(--text-xs);
+  margin: var(--space-1) 0 0;
+}
+
+.preview {
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.meta {
+  color: var(--color-fg-dim);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+}
+
+.swatchRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-fg-muted);
+}
+.swatchChip {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.buttonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.progressDemo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.progressActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-fg-muted);
+  line-height: 2;
+}
+
+.spacer { height: var(--space-16); }

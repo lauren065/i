@@ -1,0 +1,31 @@
+.h {
+  font-weight: normal;
+  margin: 0;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.level1 {
+  font-size: var(--text-md);
+  color: var(--color-fg);
+  letter-spacing: var(--tracking-widest);
+}
+
+.level2 {
+  font-size: var(--text-sm);
+  color: var(--color-fg-subtle);
+  letter-spacing: var(--tracking-wider);
+}
+
+.level3 {
+  font-size: var(--text-xs);
+  color: var(--color-fg-dim);
+  letter-spacing: var(--tracking-wider);
+}
+
+.label {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-fg-subtle);
+}

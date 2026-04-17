@@ -1,0 +1,21 @@
+.field {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+}
+
+.label {
+  width: 80px;
+  color: var(--color-fg-subtle);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+.control { flex: 1; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

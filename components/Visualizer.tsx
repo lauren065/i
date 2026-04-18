@@ -24,27 +24,11 @@ export function Visualizer({
   useEffect(() => {
     if (!pathRef.current) return;
 
-    // Idle (no audio / not playing): draw a small circle at minimum radius.
+    // Idle (no audio / not playing): draw a small circle.
     if (!active || !analyser) {
-      pathRef.current.setAttribute('d', circlePath(50, 50, 18));
+      pathRef.current.setAttribute('d', circlePath(50, 50, 14));
       return;
     }
-
-    // TEMP DEBUG: log one sample/sec so we can see whether the analyser is
-    // returning real frequency data or all zeros.
-    const debug = new Uint8Array(analyser.frequencyBinCount);
-    const debugTimer = setInterval(() => {
-      analyser.getByteFrequencyData(debug);
-      let sum = 0, peak = 0;
-      for (let i = 0; i < debug.length; i++) {
-        sum += debug[i];
-        if (debug[i] > peak) peak = debug[i];
-      }
-      // eslint-disable-next-line no-console
-      console.log('[viz] avg=', (sum / debug.length).toFixed(1),
-                  ' peak=', peak,
-                  ' ctxState=', ((analyser as any).context?.state));
-    }, 1000);
 
     const buf = new Uint8Array(analyser.frequencyBinCount);
     const n = analyser.frequencyBinCount;
@@ -57,33 +41,25 @@ export function Visualizer({
       bands.push([lo, Math.max(hi, lo + 1)]);
     }
 
-    // Overall loudness drives common radius; per-band deltas only wobble the shape.
-    // This keeps the blob from disappearing during quiet moments while still
-    // squishing with each beat/transient.
-    const MIN_R = 18;      // never smaller than this — blob stays clearly visible
-    const MAX_R = 44;      // cap so it never clips the viewBox
-    const WOBBLE = 7;      // per-axis asymmetry amplitude
-
+    // Strong perceptual curve: small values get lifted, large ones stretched.
+    // Uses peak (not average) per band — more responsive to transients.
     const tick = () => {
       analyser.getByteFrequencyData(buf);
       const levels: number[] = [];
       for (const [lo, hi] of bands) {
         let peak = 0;
         for (let k = lo; k < hi; k++) if (buf[k] > peak) peak = buf[k];
-        let v = peak / 255;
-        v = Math.pow(v, 0.55);
+        let v = peak / 255;            // 0..1
+        v = Math.pow(v, 0.55);         // expand dynamic range (lifts quiet parts)
         levels.push(v);
       }
-      const avg = (levels[0] + levels[1] + levels[2] + levels[3]) / 4;
-      const common = MIN_R + avg * (MAX_R - MIN_R);
-
-      // Visually flipped upside-down: low-freq band drives the BOTTOM bulge
-      // (highs on top). Keeping the transform off the wrapper avoids GPU
-      // layer issues that were freezing path updates.
-      const rBottom = common + (levels[0] - avg) * WOBBLE;
-      const rRight  = common + (levels[1] - avg) * WOBBLE;
-      const rTop    = common + (levels[2] - avg) * WOBBLE;
-      const rLeft   = common + (levels[3] - avg) * WOBBLE;
+      const base = 10;
+      const maxExtra = 34;
+      // Visually flipped upside-down by swapping top↔bottom band inputs.
+      const rBottom = base + levels[0] * maxExtra;
+      const rRight  = base + levels[1] * maxExtra;
+      const rTop    = base + levels[2] * maxExtra;
+      const rLeft   = base + levels[3] * maxExtra;
       const d = blobPath(50, 50, rTop, rRight, rBottom, rLeft);
       if (pathRef.current) pathRef.current.setAttribute('d', d);
 
@@ -92,14 +68,13 @@ export function Visualizer({
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-      clearInterval(debugTimer);
     };
   }, [active, analyser]);
 
   return (
     <span className={styles.wrap} aria-hidden>
       <svg className={styles.svg} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        <path ref={pathRef} d={circlePath(50, 50, 18)} fill="currentColor" />
+        <path ref={pathRef} d={circlePath(50, 50, 14)} fill="currentColor" />
       </svg>
     </span>
   );

@@ -33,16 +33,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Visualizer sits to the LEFT of the title. Size 1.3em for presence;
- * only renders on the currently playing row so other rows keep their
- * original indentation. (Vertical flip is done inside the blob itself.) */
-.vizSlot {
-  display: inline-flex;
-  flex-shrink: 0;
-  width: 1.3em;
-  height: 1.3em;
-  pointer-events: none;
-}
 .time {
   color: var(--color-fg-dim);
   font-variant-numeric: tabular-nums;

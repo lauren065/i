@@ -15,6 +15,6 @@
   color: inherit;
 }
 
-/* No transition — every rAF frame reflects current audio instantly.
- * Transitions on SVG `d` can't reliably interpolate at high update rates and
- * sometimes visually "stick" at a small value when frames come too fast. */
+.svg path {
+  transition: d 40ms linear;
+}

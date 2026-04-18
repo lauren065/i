@@ -80,6 +80,7 @@ export default function Studio({ tracks, isAdmin }: Props) {
 
       <audio
         ref={player.audioRef}
+        crossOrigin="anonymous"
         onTimeUpdate={player.onTimeUpdate}
         onLoadedMetadata={player.onLoadedMetadata}
         onEnded={player.onEnded}

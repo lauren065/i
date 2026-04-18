@@ -22,19 +22,6 @@
 .row:hover { color: var(--color-fg); }
 .row.active { color: var(--color-fg); }
 
-/* Admin-preview private track marker on /studio */
-.row.unpublishedRow::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  width: 2px;
-  height: 12px;
-  background: var(--color-fg-dim);
-  border-radius: 1px;
-  transform: translateY(-50%);
-}
-
 .titleWithViz {
   display: inline-flex;
   align-items: baseline;
@@ -55,18 +42,6 @@
 /* ── Admin variant (inline edit + publish toggle + versions + delete) ── */
 .adminRowWrap {
   border-bottom: 1px solid var(--color-border-subtle);
-  position: relative;
-}
-/* Private track indicator: a thin vertical mark on the left. No opacity — content stays fully legible. */
-.adminRowWrap.unpublished::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: var(--space-2);
-  bottom: var(--space-2);
-  width: 2px;
-  background: var(--color-fg-dim);
-  border-radius: 1px;
 }
 
 .adminRow {

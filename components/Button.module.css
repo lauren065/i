@@ -40,6 +40,16 @@
 }
 .danger:hover:not(:disabled) { background: var(--color-danger-bg-hover); }
 
+.outlined {
+  background: transparent;
+  color: var(--color-fg-muted);
+  border: 1px solid var(--color-fg-faint);
+}
+.outlined:hover:not(:disabled) {
+  color: var(--color-fg);
+  border-color: var(--color-fg-subtle);
+}
+
 .sm { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); }
 .md { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
 .lg { padding: var(--space-3) var(--space-5); font-size: var(--text-base); }

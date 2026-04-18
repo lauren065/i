@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, AnchorHTMLAttributes, forwardRef } from 'react';
 import styles from './Button.module.css';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'outlined' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 type CommonProps = { variant?: Variant; size?: Size; className?: string };

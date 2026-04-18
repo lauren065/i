@@ -117,23 +117,34 @@ export function AdminTrackRow({
   };
   const cancel = () => { setDraft(track.title); setEditing(false); };
 
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+  const handleRowClick = () => {
+    if (editing) return;
+    onTogglePublished?.();
+  };
+
   return (
     <li className={`${styles.adminRowWrap} ${isPublished ? '' : styles.unpublished}`}>
-      <div className={styles.adminRow}>
-        <button
-          type="button"
+      <div
+        className={styles.adminRow}
+        onClick={handleRowClick}
+        role="button"
+        aria-pressed={isPublished}
+        title={isPublished ? 'click to unpublish' : 'click to publish'}
+      >
+        <span
           className={`${styles.pubDot} ${isPublished ? styles.pubDotOn : styles.pubDotOff}`}
-          onClick={() => onTogglePublished?.()}
-          aria-label={isPublished ? '공개 → 비공개 전환' : '비공개 → 공개 전환'}
-          title={isPublished ? 'public (click to hide)' : 'private (click to publish)'}
+          aria-hidden
         >
           {isPublished ? '●' : '○'}
-        </button>
+        </span>
         {editing ? (
           <input
             ref={inputRef}
             className={styles.titleInput}
             value={draft}
+            onClick={stop}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commit}
             onKeyDown={(e) => {
@@ -142,13 +153,11 @@ export function AdminTrackRow({
             }}
           />
         ) : (
-          <span className={styles.titleEditable} onClick={() => setEditing(true)} title="click to edit">
-            {track.title}
-          </span>
+          <span className={styles.title}>{track.title}</span>
         )}
         <span className={styles.id}>{track.id}</span>
         <span className={styles.time}>{formatTime(track.duration)}</span>
-        <span className={styles.actions}>
+        <span className={styles.actions} onClick={stop}>
           {hasVersioning && (
             <button
               type="button"
@@ -159,6 +168,7 @@ export function AdminTrackRow({
               {activeLabel ?? 'v1'} {expanded ? '▴' : '▾'}
             </button>
           )}
+          <Button variant="outlined" size="sm" onClick={() => setEditing(true)}>edit</Button>
           <Button variant="danger" size="sm" onClick={() => onDelete?.()}>delete</Button>
         </span>
       </div>

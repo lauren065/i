@@ -1,17 +1,21 @@
 .wrap {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
   height: 1em;
   margin-left: 0.5em;
-  vertical-align: baseline;
+  vertical-align: -0.12em;
   line-height: 1;
 }
 
-.bar {
-  width: 2px;
-  background: currentColor;
-  border-radius: 1px;
-  transition: height 80ms linear, opacity var(--duration-fast) var(--easing);
-  opacity: 0.9;
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: inherit;
+}
+
+.svg path {
+  transition: d 60ms linear;
 }

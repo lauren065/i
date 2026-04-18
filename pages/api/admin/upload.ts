@@ -63,19 +63,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   /* File creation time: prefer caller-provided lastModified (browser File API),
    * fall back to filesystem mtime, then to upload-received time. */
   const uploadedAt = new Date().toISOString();
-  function resolveFileCreatedAt(): string {
-    const lmRaw = fields.fileLastModified?.[0];
-    if (lmRaw) {
-      const ms = Number(lmRaw);
-      if (Number.isFinite(ms) && ms > 0) return new Date(ms).toISOString();
-    }
+  const lmRaw = fields.fileLastModified?.[0];
+  let fileCreatedAt = uploadedAt;
+  if (lmRaw) {
+    const ms = Number(lmRaw);
+    if (Number.isFinite(ms) && ms > 0) fileCreatedAt = new Date(ms).toISOString();
+  } else {
     try {
       const mtime = fs.statSync(file.filepath).mtime;
-      if (mtime.getTime() > 0) return mtime.toISOString();
+      if (mtime.getTime() > 0) fileCreatedAt = mtime.toISOString();
     } catch {}
-    return uploadedAt;
   }
-  const fileCreatedAt = resolveFileCreatedAt();
   const ext = path.extname(file.originalFilename || file.newFilename).toLowerCase();
   if (!ALLOWED_EXT.has(ext)) {
     fs.unlinkSync(file.filepath);

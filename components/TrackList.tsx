@@ -4,6 +4,7 @@ import { Heading } from './Heading';
 import { Button } from './Button';
 import { Switch } from './Switch';
 import { Visualizer } from './Visualizer';
+import { PlayIcon, PauseIcon } from './Icons';
 
 export type TrackRef = { id: string; title: string; section: string; duration: number };
 
@@ -55,22 +56,30 @@ export function TrackSection({ title, children }: { title: string; children: Rea
  * Studio row: click to play. When this row is the playing one, a mini
  * frequency-reactive visualizer renders right after the title text —
  * its position naturally shifts with title length.
+ *
+ * `unpublished` — if true, row gets a left-side marker (admin preview).
+ * Content stays fully legible, no opacity tricks.
  */
 export function PlayableTrackRow({
   track,
   active,
   playing,
   analyser,
+  unpublished,
   onClick,
 }: {
   track: TrackRef;
   active: boolean;
   playing: boolean;
   analyser?: AnalyserNode | null;
+  unpublished?: boolean;
   onClick: () => void;
 }) {
   return (
-    <li className={`${styles.row} ${active ? styles.active : ''}`} onClick={onClick}>
+    <li
+      className={`${styles.row} ${active ? styles.active : ''} ${unpublished ? styles.unpublishedRow : ''}`}
+      onClick={onClick}
+    >
       <span className={styles.titleWithViz}>
         {track.title}
         {active && playing && <Visualizer active analyser={analyser} />}
@@ -184,7 +193,7 @@ export function AdminTrackRow({
               aria-label="play active version"
               title={nowPlayingVersion === '__active__' ? 'playing…' : 'play'}
             >
-              {nowPlayingVersion === '__active__' ? '‖' : '▸'}
+              {nowPlayingVersion === '__active__' ? <PauseIcon /> : <PlayIcon />}
             </button>
           )}
           {hasVersioning && versionCount > 0 && (
@@ -328,7 +337,7 @@ function VersionPanel({
                     aria-label={`play ${v.id}`}
                     title={isPlaying ? 'playing…' : `play ${v.id}`}
                   >
-                    {isPlaying ? '‖' : '▸'}
+                    {isPlaying ? <PauseIcon /> : <PlayIcon />}
                   </button>
                 )}
                 {!isActive && onSetActive && (

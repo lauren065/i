@@ -10,6 +10,7 @@ export { ProgressBar } from './ProgressBar';
 export { Player } from './Player';
 export { BlinkImage } from './BlinkImage';
 export { Visualizer } from './Visualizer';
+export { PlayIcon, PauseIcon } from './Icons';
 export {
   TrackSection,
   PlayableTrackRow,

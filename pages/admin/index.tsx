@@ -285,7 +285,16 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
           ? (t.activeVersionId ?? (t.versions?.length ? `v${t.versions.length}` : ''))
           : nowPlaying.versionId;
         const title = vLabel ? `${t.title} · ${vLabel}` : t.title;
-        return <Player title={title} progress={player.progress} duration={player.duration} />;
+        return (
+          <Player
+            title={title}
+            progress={player.progress}
+            duration={player.duration}
+            playing={player.playing}
+            onTogglePlay={player.togglePlay}
+            onSeek={player.seek}
+          />
+        );
       })()}
 
       <audio

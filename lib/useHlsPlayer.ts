@@ -20,6 +20,8 @@ export type UseHlsPlayer = {
   duration: number;
   analyser: AnalyserNode | null;
   play: (key: string, manifestUrl: string) => Promise<void>;
+  togglePlay: () => void;
+  seek: (seconds: number) => void;
   stop: () => void;
   onTimeUpdate: (e: React.SyntheticEvent<HTMLAudioElement>) => void;
   onLoadedMetadata: (e: React.SyntheticEvent<HTMLAudioElement>) => void;
@@ -99,6 +101,21 @@ export function useHlsPlayer(): UseHlsPlayer {
     setCurrentKey(null);
   };
 
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  };
+
+  const seek = (seconds: number) => {
+    const audio = audioRef.current;
+    if (!audio || !isFinite(seconds)) return;
+    audio.currentTime = Math.max(0, seconds);
+    // Reflect in state immediately for snappy UI
+    setProgress(audio.currentTime);
+  };
+
   return {
     audioRef,
     currentKey,
@@ -107,6 +124,8 @@ export function useHlsPlayer(): UseHlsPlayer {
     duration,
     analyser,
     play,
+    togglePlay,
+    seek,
     stop,
     onTimeUpdate: (e) => setProgress(e.currentTarget.currentTime),
     onLoadedMetadata: (e) => setDuration(e.currentTarget.duration),

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readTracks, Track } from '../lib/state';
+import { readAdminClaims } from '../lib/auth';
 import { useHlsPlayer } from '../lib/useHlsPlayer';
 import {
   PageShell,
@@ -14,18 +15,30 @@ import {
 
 const SECTION_ORDER = ['Disc 1', 'Disc 2', 'Disc 3', 'Pure WInter', 'Singles'];
 
-export const getServerSideProps: GetServerSideProps<{ tracks: Track[] }> = async () => {
-  const tracks = readTracks().filter((t) => t.published !== false);
-  return { props: { tracks } };
+type Props = { tracks: Track[]; isAdmin: boolean };
+
+export const getServerSideProps: GetServerSideProps<Props> = async ({ req }) => {
+  const claims = readAdminClaims(req);
+  const isAdmin = !!claims;
+  // Admins see everything; public sees only published tracks.
+  const tracks = isAdmin ? readTracks() : readTracks().filter((t) => t.published !== false);
+  return { props: { tracks, isAdmin } };
 };
 
-export default function Studio({ tracks }: { tracks: Track[] }) {
+export default function Studio({ tracks, isAdmin }: Props) {
   const player = useHlsPlayer();
 
   const onPlay = (id: string) => player.play(id, `/api/manifest/${id}`);
 
   const sections: Record<string, Track[]> = {};
   tracks.forEach((t) => { (sections[t.section] ||= []).push(t); });
+
+  // Section ordering: known sections first, then any others (e.g. Unreleased) alphabetically
+  const knownSections = SECTION_ORDER.filter((s) => sections[s]);
+  const extraSections = Object.keys(sections)
+    .filter((s) => !SECTION_ORDER.includes(s))
+    .sort();
+  const orderedSections = [...knownSections, ...extraSections];
 
   const currentTitle = tracks.find((t) => t.id === player.currentKey)?.title || '';
 
@@ -37,7 +50,7 @@ export default function Studio({ tracks }: { tracks: Track[] }) {
           <Link href="/" className={headerLinkClassName}>← cheolm.in</Link>
         </SimpleHeader>
 
-        {SECTION_ORDER.filter((s) => sections[s]).map((section) => (
+        {orderedSections.map((section) => (
           <TrackSection key={section} title={section}>
             {sections[section].map((t) => (
               <PlayableTrackRow
@@ -46,6 +59,7 @@ export default function Studio({ tracks }: { tracks: Track[] }) {
                 active={player.currentKey === t.id}
                 playing={player.playing}
                 analyser={player.analyser}
+                unpublished={t.published === false}
                 onClick={() => onPlay(t.id)}
               />
             ))}
@@ -54,7 +68,14 @@ export default function Studio({ tracks }: { tracks: Track[] }) {
       </PageShell>
 
       {player.currentKey && (
-        <Player title={currentTitle} progress={player.progress} duration={player.duration} />
+        <Player
+          title={currentTitle}
+          progress={player.progress}
+          duration={player.duration}
+          playing={player.playing}
+          onTogglePlay={player.togglePlay}
+          onSeek={player.seek}
+        />
       )}
 
       <audio

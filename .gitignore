@@ -58,3 +58,6 @@ public/assets/*.m4a
 public/assets/*.flac
 public/assets/*.ogg
 public/assets/studio/
+
+# claude project-local config + memory (private)
+.claude/

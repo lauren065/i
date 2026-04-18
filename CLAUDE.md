@@ -25,8 +25,10 @@
 
 ## 📁 메모리 경로
 
+**프로젝트 내부** (`.gitignore` 처리됨 — 커밋 안 됨):
+
 ```
-~/.claude/projects/-Users-i-cheolm-in/memory/
+/Users/i/cheolm.in/.claude/memory/
 ├── OVERVIEW.md          ← 한줄 요약 + 현재 단계 (세션 시작 시 반드시 읽기)
 ├── VISION.md            ← 장기 비전 + 핵심 가정
 ├── BRAND.md             ← 브랜드 톤/미학/taboo
@@ -39,6 +41,11 @@
 ├── handoff-YYYY-MM-DD.md ← 세션 종료 시 갱신 (최신 하나만 있으면 됨)
 └── mistakes.md          ← 실수 패턴 (CLAUDE.md 전역 규칙)
 ```
+
+메모리를 프로젝트 내부(`.claude/memory/`)에 두는 이유:
+- 권한 건너뛰기 모드에서 `~/.claude/` 바깥 디렉토리 접근 시마다 확인받는 것 회피
+- 세션을 `/Users/i/cheolm.in/` 에서 시작하면 모든 접근 자유
+- 프로젝트와 메모리가 한 덩어리로 보존됨
 
 ### 세션 루틴
 - **시작 시**: `OVERVIEW.md` + 최신 `handoff-*.md` + `OPEN_QUESTIONS.md` 먼저 읽기

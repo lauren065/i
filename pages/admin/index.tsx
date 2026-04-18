@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readAdminClaims, AdminClaims } from '../../lib/auth';
 import { readTracks, Track } from '../../lib/state';
 import {
   PageShell,
+  PageMeta,
   AppHeader,
   HeaderLink,
   headerLinkClassName,
@@ -40,7 +40,7 @@ export default function Admin(props: Props) {
 function LoginGate() {
   return (
     <>
-      <Head><title>admin · cheolm.in</title></Head>
+      <PageMeta title="admin" description="access restricted" path="/admin" />
       <PageShell centered>
         <div className={styles.loginCard}>
           <Heading level={1}>admin</Heading>
@@ -144,7 +144,7 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
 
   return (
     <>
-      <Head><title>admin · cheolm.in</title></Head>
+      <PageMeta title="admin" description={`${tracks.length} products`} path="/admin" />
       <PageShell width="medium">
         <AppHeader
           left={<><Label>admin</Label><span className={styles.who}>{admin.email}</span></>}

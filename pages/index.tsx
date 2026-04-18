@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PageShell, BlinkImage } from '../components';
+import { PageShell, PageMeta, BlinkImage } from '../components';
 
 export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -21,8 +21,11 @@ export default function Home() {
   };
 
   return (
-    <PageShell centered>
-      <BlinkImage src="/assets/2025.png" alt="2025" width={30} flash={flash} onClick={handleClick} />
-    </PageShell>
+    <>
+      <PageMeta title="i" description="i · a studio under a domain." path="/" />
+      <PageShell centered>
+        <BlinkImage src="/assets/2025.png" alt="i" width={30} flash={flash} onClick={handleClick} />
+      </PageShell>
+    </>
   );
 }

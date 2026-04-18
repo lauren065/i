@@ -80,14 +80,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await transcodeToHls(file.filepath, id);
     await uploadHlsToS3(id);
 
+    const now = new Date().toISOString();
     tracks.push({
       id,
+      type: 'music',
       title,
       section,
       sectionSlug,
       titleSlug,
       srcRel: `uploads/${path.basename(file.filepath)}`,
       duration,
+      createdAt: now,
+      updatedAt: now,
+      published: true,
     });
     writeTracks(tracks);
 

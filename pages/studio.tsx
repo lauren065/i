@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readTracks, Track } from '../lib/state';
 import {
   PageShell,
+  PageMeta,
   SimpleHeader,
   headerLinkClassName,
   TrackSection,
@@ -71,9 +71,7 @@ export default function Studio({ tracks }: { tracks: Track[] }) {
 
   return (
     <>
-      <Head>
-        <title>studio · cheolm.in</title>
-      </Head>
+      <PageMeta title="studio" description={`${tracks.length} tracks. one person.`} path="/studio" />
       <PageShell width="narrow">
         <SimpleHeader>
           <Link href="/" className={headerLinkClassName}>← cheolm.in</Link>

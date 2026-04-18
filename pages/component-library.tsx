@@ -1,7 +1,7 @@
-import Head from 'next/head';
 import { useState } from 'react';
 import {
   PageShell,
+  PageMeta,
   AppHeader,
   Heading,
   Label,
@@ -44,7 +44,7 @@ export default function ComponentLibrary() {
 
   return (
     <>
-      <Head><title>component library · cheolm.in</title></Head>
+      <PageMeta title="component library" description="design system v1" path="/component-library" />
       <PageShell width="medium">
         <AppHeader
           left={<Label>component library</Label>}

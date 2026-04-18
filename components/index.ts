@@ -1,4 +1,5 @@
 export { PageShell } from './PageShell';
+export { PageMeta } from './PageMeta';
 export { AppHeader, SimpleHeader, HeaderLink, headerLinkClassName } from './AppHeader';
 export { Heading, Label } from './Heading';
 export { Button, LinkButton } from './Button';

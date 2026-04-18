@@ -23,25 +23,25 @@
 .row.active { color: var(--color-fg); }
 
 .titleWithViz {
-  position: relative;
+  display: inline-flex;
+  align-items: center;
   min-width: 0;
+  gap: 0.5em;
 }
 .title {
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Visualizer sits to the LEFT of the title, absolute-positioned so it
- * never affects title indentation across rows. Flipped upside-down. */
+/* Visualizer sits to the LEFT of the title. Flipped upside-down. Size 1.3em
+ * for presence; only renders on the currently playing row so other rows
+ * keep their original indentation. */
 .vizSlot {
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  width: 1em;
-  height: 1em;
-  margin-right: 0.4em;
-  transform: translateY(-50%) scaleY(-1);
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 1.3em;
+  height: 1.3em;
+  transform: scaleY(-1);
   pointer-events: none;
 }
 .time {

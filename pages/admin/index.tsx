@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readAdminClaims, AdminClaims } from '../../lib/auth';
 import { readTracks, Track } from '../../lib/state';
+import { useHlsPlayer } from '../../lib/useHlsPlayer';
 import {
   PageShell,
   PageMeta,
@@ -19,6 +20,7 @@ import {
   ProgressBar,
   TrackSection,
   AdminTrackRow,
+  Player,
 } from '../../components';
 import styles from './Admin.module.css';
 
@@ -60,6 +62,22 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', section: '', file: null as File | null });
+  const player = useHlsPlayer();
+
+  const playTrackVersion = (trackId: string, versionId?: string) => {
+    const key = `${trackId}#${versionId ?? '__active__'}`;
+    const url = versionId
+      ? `/api/manifest/${trackId}?version=${encodeURIComponent(versionId)}`
+      : `/api/manifest/${trackId}`;
+    return player.play(key, url);
+  };
+
+  const parseCurrentKey = (): { trackId: string; versionId: string } | null => {
+    if (!player.currentKey) return null;
+    const [trackId, versionId] = player.currentKey.split('#');
+    return { trackId, versionId };
+  };
+  const nowPlaying = parseCurrentKey();
 
   const refresh = async () => {
     const r = await fetch('/api/admin/tracks');
@@ -232,24 +250,48 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
           <Heading level={2}>Tracks ({tracks.length})</Heading>
           {Object.entries(grouped).map(([section, items]) => (
             <TrackSection key={section} title={section}>
-              {items.map((t) => (
-                <AdminTrackRow
-                  key={t.id}
-                  track={t}
-                  versions={t.versions}
-                  activeVersionId={t.activeVersionId}
-                  onTitleChange={(newTitle) => patchTrack(t.id, { title: newTitle })}
-                  onTogglePublished={() => patchTrack(t.id, { published: t.published === false })}
-                  onDelete={() => deleteTrack(t.id)}
-                  onUploadVersion={(file, note) => uploadVersion(t.id, file, note)}
-                  onSetActiveVersion={(vid) => patchTrack(t.id, { activeVersionId: vid })}
-                  onDeleteVersion={(vid) => deleteVersion(t.id, vid)}
-                />
-              ))}
+              {items.map((t) => {
+                const npv = nowPlaying?.trackId === t.id ? nowPlaying.versionId : undefined;
+                return (
+                  <AdminTrackRow
+                    key={t.id}
+                    track={t}
+                    versions={t.versions}
+                    activeVersionId={t.activeVersionId}
+                    nowPlayingVersion={npv}
+                    onTitleChange={(newTitle) => patchTrack(t.id, { title: newTitle })}
+                    onTogglePublished={() => patchTrack(t.id, { published: t.published === false })}
+                    onDelete={() => deleteTrack(t.id)}
+                    onUploadVersion={(file, note) => uploadVersion(t.id, file, note)}
+                    onSetActiveVersion={(vid) => patchTrack(t.id, { activeVersionId: vid })}
+                    onDeleteVersion={(vid) => deleteVersion(t.id, vid)}
+                    onPlay={(vid) => playTrackVersion(t.id, vid)}
+                  />
+                );
+              })}
             </TrackSection>
           ))}
         </section>
       </PageShell>
+
+      {nowPlaying && (() => {
+        const t = tracks.find((x) => x.id === nowPlaying.trackId);
+        if (!t) return null;
+        const vLabel = nowPlaying.versionId === '__active__'
+          ? (t.activeVersionId ?? (t.versions?.length ? `v${t.versions.length}` : ''))
+          : nowPlaying.versionId;
+        const title = vLabel ? `${t.title} · ${vLabel}` : t.title;
+        return <Player title={title} progress={player.progress} duration={player.duration} />;
+      })()}
+
+      <audio
+        ref={player.audioRef}
+        onTimeUpdate={player.onTimeUpdate}
+        onLoadedMetadata={player.onLoadedMetadata}
+        onEnded={player.onEnded}
+        onPause={player.onPause}
+        onPlay={player.onPlay}
+      />
     </>
   );
 }

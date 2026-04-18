@@ -18,14 +18,24 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const meta = readTracks().find((t) => t.id === slug);
+  const isAdmin = !!readAdminClaims(req);
 
   // Block unpublished tracks from public access. Admins may preview.
-  if (meta && meta.published === false && !readAdminClaims(req)) {
+  if (meta && meta.published === false && !isAdmin) {
     return res.status(404).json({ error: 'track not found' });
   }
 
-  // Resolve active version (falls back to slug itself for legacy tracks)
-  const effectiveSlug = meta ? activeHlsSlug(meta) : slug;
+  // Version override: admin-only. Public requests always get the active version.
+  const versionParam = typeof req.query.version === 'string' ? req.query.version : undefined;
+  let effectiveSlug: string;
+  if (versionParam && isAdmin && meta) {
+    const v = meta.versions?.find((x) => x.id === versionParam);
+    if (!v) return res.status(404).json({ error: `version not found: ${versionParam}` });
+    effectiveSlug = v.hlsSlug;
+  } else {
+    // Resolve active version (falls back to slug itself for legacy tracks)
+    effectiveSlug = meta ? activeHlsSlug(meta) : slug;
+  }
 
   let m3u8: string;
   try {

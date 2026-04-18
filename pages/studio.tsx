@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { readTracks, Track } from '../lib/state';
+import { useHlsPlayer } from '../lib/useHlsPlayer';
 import {
   PageShell,
   PageMeta,
@@ -20,55 +20,14 @@ export const getServerSideProps: GetServerSideProps<{ tracks: Track[] }> = async
 };
 
 export default function Studio({ tracks }: { tracks: Track[] }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const hlsRef = useRef<any>(null);
-  const [current, setCurrent] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const player = useHlsPlayer();
 
-  useEffect(() => {
-    return () => {
-      if (hlsRef.current) hlsRef.current.destroy();
-    };
-  }, []);
-
-  const play = async (id: string) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (current === id) {
-      if (playing) {
-        audio.pause();
-      } else {
-        await audio.play();
-      }
-      return;
-    }
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-    const manifestUrl = `/api/manifest/${id}`;
-    const Hls = (await import('hls.js')).default;
-    if (Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true });
-      hls.loadSource(manifestUrl);
-      hls.attachMedia(audio);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => audio.play().catch(() => {}));
-      hlsRef.current = hls;
-    } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-      audio.src = manifestUrl;
-      audio.addEventListener('loadedmetadata', () => audio.play().catch(() => {}), { once: true });
-    }
-    setCurrent(id);
-  };
+  const onPlay = (id: string) => player.play(id, `/api/manifest/${id}`);
 
   const sections: Record<string, Track[]> = {};
-  tracks.forEach((t) => {
-    (sections[t.section] ||= []).push(t);
-  });
+  tracks.forEach((t) => { (sections[t.section] ||= []).push(t); });
 
-  const currentTitle = tracks.find((t) => t.id === current)?.title || '';
+  const currentTitle = tracks.find((t) => t.id === player.currentKey)?.title || '';
 
   return (
     <>
@@ -84,24 +43,27 @@ export default function Studio({ tracks }: { tracks: Track[] }) {
               <PlayableTrackRow
                 key={t.id}
                 track={t}
-                active={current === t.id}
-                playing={playing}
-                onClick={() => play(t.id)}
+                active={player.currentKey === t.id}
+                playing={player.playing}
+                analyser={player.analyser}
+                onClick={() => onPlay(t.id)}
               />
             ))}
           </TrackSection>
         ))}
       </PageShell>
 
-      {current && <Player title={currentTitle} progress={progress} duration={duration} />}
+      {player.currentKey && (
+        <Player title={currentTitle} progress={player.progress} duration={player.duration} />
+      )}
 
       <audio
-        ref={audioRef}
-        onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime)}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onEnded={() => setPlaying(false)}
-        onPause={() => setPlaying(false)}
-        onPlay={() => setPlaying(true)}
+        ref={player.audioRef}
+        onTimeUpdate={player.onTimeUpdate}
+        onLoadedMetadata={player.onLoadedMetadata}
+        onEnded={player.onEnded}
+        onPause={player.onPause}
+        onPlay={player.onPlay}
       />
     </>
   );

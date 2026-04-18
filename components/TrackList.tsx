@@ -3,6 +3,7 @@ import styles from './TrackList.module.css';
 import { Heading } from './Heading';
 import { Button } from './Button';
 import { Switch } from './Switch';
+import { Visualizer } from './Visualizer';
 
 export type TrackRef = { id: string; title: string; section: string; duration: number };
 
@@ -50,24 +51,30 @@ export function TrackSection({ title, children }: { title: string; children: Rea
   );
 }
 
-/** Studio-style row: click to play, indicator shows ▸ / ‖. */
+/**
+ * Studio row: click to play. When this row is the playing one, a mini
+ * frequency-reactive visualizer renders right after the title text —
+ * its position naturally shifts with title length.
+ */
 export function PlayableTrackRow({
   track,
   active,
   playing,
+  analyser,
   onClick,
 }: {
   track: TrackRef;
   active: boolean;
   playing: boolean;
+  analyser?: AnalyserNode | null;
   onClick: () => void;
 }) {
   return (
     <li className={`${styles.row} ${active ? styles.active : ''}`} onClick={onClick}>
-      <span className={styles.indicator}>
-        {active && playing ? '▸' : active ? '‖' : ' '}
+      <span className={styles.titleWithViz}>
+        {track.title}
+        {active && playing && <Visualizer active analyser={analyser} />}
       </span>
-      <span className={styles.title}>{track.title}</span>
       <span className={styles.time}>{formatTime(track.duration)}</span>
     </li>
   );
@@ -95,22 +102,29 @@ export function AdminTrackRow({
   track,
   versions,
   activeVersionId,
+  nowPlayingVersion,
   onTitleChange,
   onTogglePublished,
   onDelete,
   onUploadVersion,
   onSetActiveVersion,
   onDeleteVersion,
+  onPlay,
 }: {
   track: AdminRowTrack;
   versions?: VersionRef[];
   activeVersionId?: string;
+  /** If set and matches this track's id, which version is currently playing.
+   *  `'__active__'` for the row-level play (active version). */
+  nowPlayingVersion?: string;
   onTitleChange?: (newTitle: string) => void | Promise<void>;
   onTogglePublished?: () => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onUploadVersion?: (file: File, note?: string) => void | Promise<void>;
   onSetActiveVersion?: (versionId: string) => void | Promise<void>;
   onDeleteVersion?: (versionId: string) => void | Promise<void>;
+  /** Play a version. `versionId === undefined` plays the active version. */
+  onPlay?: (versionId?: string) => void | Promise<void>;
 }) {
   const isPublished = track.published !== false;
   const versionCount = versions?.length ?? 0;
@@ -162,6 +176,17 @@ export function AdminTrackRow({
         <span className={styles.id}>{track.id}</span>
         <span className={styles.time}>{formatTime(track.duration)}</span>
         <span className={styles.actions} onClick={stop}>
+          {onPlay && (
+            <button
+              type="button"
+              className={styles.playBtn}
+              onClick={() => onPlay()}
+              aria-label="play active version"
+              title={nowPlayingVersion === '__active__' ? 'playing…' : 'play'}
+            >
+              {nowPlayingVersion === '__active__' ? '‖' : '▸'}
+            </button>
+          )}
           {hasVersioning && versionCount > 0 && (
             <span className={styles.versionCount} title={`${versionCount} version${versionCount === 1 ? '' : 's'}`}>
               {activeVersionId ?? versions![versionCount - 1].id}
@@ -196,9 +221,11 @@ export function AdminTrackRow({
               trackTitle={track.title}
               versions={versions ?? []}
               activeVersionId={activeVersionId}
+              nowPlayingVersion={nowPlayingVersion}
               onUploadVersion={onUploadVersion!}
               onSetActive={onSetActiveVersion}
               onDelete={onDeleteVersion}
+              onPlay={onPlay}
             />
           )}
         </div>
@@ -211,16 +238,20 @@ function VersionPanel({
   trackTitle,
   versions,
   activeVersionId,
+  nowPlayingVersion,
   onUploadVersion,
   onSetActive,
   onDelete,
+  onPlay,
 }: {
   trackTitle: string;
   versions: VersionRef[];
   activeVersionId?: string;
+  nowPlayingVersion?: string;
   onUploadVersion: (file: File, note?: string) => void | Promise<void>;
   onSetActive?: (versionId: string) => void | Promise<void>;
   onDelete?: (versionId: string) => void | Promise<void>;
+  onPlay?: (versionId?: string) => void | Promise<void>;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [note, setNote] = useState('');
@@ -279,6 +310,7 @@ function VersionPanel({
         )}
         {[...versions].reverse().map((v) => {
           const isActive = v.id === effectiveActive;
+          const isPlaying = nowPlayingVersion === v.id;
           return (
             <li key={v.id} className={`${styles.versionRow} ${isActive ? styles.versionActive : ''}`}>
               <span className={styles.versionId}>{v.id}</span>
@@ -288,6 +320,17 @@ function VersionPanel({
                 {v.note ? ` · ${v.note}` : ''}
               </span>
               <span className={styles.versionActions}>
+                {onPlay && (
+                  <button
+                    type="button"
+                    className={styles.playBtn}
+                    onClick={() => onPlay(v.id)}
+                    aria-label={`play ${v.id}`}
+                    title={isPlaying ? 'playing…' : `play ${v.id}`}
+                  >
+                    {isPlaying ? '‖' : '▸'}
+                  </button>
+                )}
                 {!isActive && onSetActive && (
                   <Button size="sm" variant="secondary" onClick={() => onSetActive(v.id)}>set active</Button>
                 )}

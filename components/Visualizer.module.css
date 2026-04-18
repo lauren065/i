@@ -1,0 +1,17 @@
+.wrap {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 1em;
+  margin-left: 0.5em;
+  vertical-align: baseline;
+  line-height: 1;
+}
+
+.bar {
+  width: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: height 80ms linear, opacity var(--duration-fast) var(--easing);
+  opacity: 0.9;
+}

@@ -9,6 +9,7 @@ export { Field, FieldActions } from './Field';
 export { ProgressBar } from './ProgressBar';
 export { Player } from './Player';
 export { BlinkImage } from './BlinkImage';
+export { Visualizer } from './Visualizer';
 export {
   TrackSection,
   PlayableTrackRow,

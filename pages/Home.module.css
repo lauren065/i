@@ -1,0 +1,17 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.studio {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: lowercase;
+  color: var(--color-fg-dim);
+  transition: color var(--duration-fast) var(--easing);
+}
+.studio:hover {
+  color: var(--color-fg);
+}

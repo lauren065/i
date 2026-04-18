@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
+import Link from 'next/link';
 import { PageShell, PageMeta, BlinkImage } from '../components';
+import styles from './Home.module.css';
 
 export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -24,7 +26,10 @@ export default function Home() {
     <>
       <PageMeta title="i" description="i · a studio under a domain." path="/" />
       <PageShell centered>
-        <BlinkImage src="/assets/2025.png" alt="i" width={30} flash={flash} onClick={handleClick} />
+        <div className={styles.stack}>
+          <BlinkImage src="/assets/2025.png" alt="i" width={30} flash={flash} onClick={handleClick} />
+          <Link href="/studio" className={styles.studio}>studio</Link>
+        </div>
       </PageShell>
     </>
   );

@@ -11,6 +11,9 @@
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-border);
   padding: var(--space-3) var(--space-6);
+  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(var(--space-6) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--space-6) + env(safe-area-inset-right, 0px));
   font-size: var(--text-sm);
 }
 

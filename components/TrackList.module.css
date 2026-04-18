@@ -43,6 +43,13 @@
 .adminRowWrap {
   border-bottom: 1px solid var(--color-border-subtle);
 }
+/* Private marker: dim only the clickable row, not its expanded detail panel */
+.adminRowWrap.unpublished > .adminRow {
+  opacity: 0.7;
+}
+.adminRowWrap.unpublished > .adminRow:hover {
+  opacity: 1;
+}
 
 .adminRow {
   display: grid;

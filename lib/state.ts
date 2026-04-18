@@ -45,6 +45,12 @@ export type TrackVersion = {
   duration: number;
   hlsSlug: string;          // path suffix for HLS storage
   note?: string;
+  /**
+   * Relative path (from STATE_DIR) to the precomputed envelope JSON for this
+   * version. Upload paths that don't set this are back-compat placeholders —
+   * a migration pass will fill them in. New uploads always set it.
+   */
+  envelopeRel?: string;
 };
 
 export type MusicProduct = ProductBase & {
@@ -148,6 +154,16 @@ export function hlsDir(slug: string): string {
 
 export function uploadsDir(): string {
   return path.join(STATE_DIR, 'uploads');
+}
+
+/** Canonical envelope file path for a given HLS slug. */
+export function envelopePath(hlsSlug: string): string {
+  return path.join(STATE_DIR, 'envelopes', hlsSlug, 'envelope.json');
+}
+
+/** Relative-to-STATE_DIR form of the envelope path (stored in TrackVersion). */
+export function envelopeRelFor(hlsSlug: string): string {
+  return path.posix.join('envelopes', hlsSlug, 'envelope.json');
 }
 
 export function lettersDir(): string {

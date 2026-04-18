@@ -3,13 +3,21 @@ import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 import { requireAdmin } from '../../../lib/auth';
-import { readTracks, writeTracks, uploadsDir, TrackVersion } from '../../../lib/state';
+import {
+  readTracks,
+  writeTracks,
+  uploadsDir,
+  envelopePath,
+  envelopeRelFor,
+  TrackVersion,
+} from '../../../lib/state';
 import {
   slugify,
   probeDuration,
   transcodeToHls,
   uploadHlsToS3,
 } from '../../../lib/hls-pipeline';
+import { extractEnvelope, writeEnvelope } from '../../../lib/envelope';
 
 export const config = {
   api: {
@@ -112,12 +120,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await transcodeToHls(file.filepath, hlsSlug);
       await uploadHlsToS3(hlsSlug);
 
+      // Envelope extraction is mandatory — throws on failure, handled by outer catch
+      const env = await extractEnvelope(file.filepath);
+      writeEnvelope(envelopePath(hlsSlug), env);
+
       track.versions.push({
         id: newId,
         createdAt: fileCreatedAt, // file's own timestamp, not upload time
         duration,
         hlsSlug,
         note,
+        envelopeRel: envelopeRelFor(hlsSlug),
       });
       track.activeVersionId = newId;
       track.duration = duration; // mirror active for convenience
@@ -162,6 +175,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const duration = await probeDuration(file.filepath);
     await transcodeToHls(file.filepath, id);
     await uploadHlsToS3(id);
+
+    // Envelope extraction is mandatory. Brand-new track = legacy single-rendering
+    // path (hlsSlug === id). A later new-version upload will keep v1 pointing at
+    // this same envelope slug.
+    const env = await extractEnvelope(file.filepath);
+    writeEnvelope(envelopePath(id), env);
 
     tracks.push({
       id,

@@ -3,7 +3,7 @@ import styles from './TrackList.module.css';
 import { Heading } from './Heading';
 import { Button } from './Button';
 import { Switch } from './Switch';
-import { Visualizer } from './Visualizer';
+import { Visualizer, type Envelope } from './Visualizer';
 import { PlayIcon, PauseIcon } from './Icons';
 
 export type TrackRef = { id: string; title: string; section: string; duration: number };
@@ -64,14 +64,16 @@ export function PlayableTrackRow({
   track,
   active,
   playing,
-  analyser,
+  envelope,
+  getCurrentTime,
   unpublished,
   onClick,
 }: {
   track: TrackRef;
   active: boolean;
   playing: boolean;
-  analyser?: AnalyserNode | null;
+  envelope?: Envelope | null;
+  getCurrentTime?: () => number;
   unpublished?: boolean;
   onClick: () => void;
 }) {
@@ -81,7 +83,9 @@ export function PlayableTrackRow({
       onClick={onClick}
     >
       <span className={styles.titleWithViz}>
-        {active && playing && <Visualizer active analyser={analyser} />}
+        {active && playing && (
+          <Visualizer active envelope={envelope} getCurrentTime={getCurrentTime} />
+        )}
         <span className={styles.title}>{track.title}</span>
       </span>
       <span className={styles.time}>{formatTime(track.duration)}</span>

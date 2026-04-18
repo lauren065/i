@@ -66,10 +66,10 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
 
   const playTrackVersion = (trackId: string, versionId?: string) => {
     const key = `${trackId}#${versionId ?? '__active__'}`;
-    const url = versionId
-      ? `/api/manifest/${trackId}?version=${encodeURIComponent(versionId)}`
-      : `/api/manifest/${trackId}`;
-    return player.play(key, url);
+    const qs = versionId ? `?version=${encodeURIComponent(versionId)}` : '';
+    const manifestUrl = `/api/manifest/${trackId}${qs}`;
+    const envelopeUrl = `/api/envelope/${trackId}${qs}`;
+    return player.play(key, manifestUrl, envelopeUrl);
   };
 
   const parseCurrentKey = (): { trackId: string; versionId: string } | null => {

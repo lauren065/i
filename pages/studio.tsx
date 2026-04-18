@@ -28,7 +28,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ req }) => 
 export default function Studio({ tracks, isAdmin }: Props) {
   const player = useHlsPlayer();
 
-  const onPlay = (id: string) => player.play(id, `/api/manifest/${id}`);
+  const onPlay = (id: string) =>
+    player.play(id, `/api/manifest/${id}`, `/api/envelope/${id}`);
 
   const sections: Record<string, Track[]> = {};
   tracks.forEach((t) => { (sections[t.section] ||= []).push(t); });
@@ -58,7 +59,8 @@ export default function Studio({ tracks, isAdmin }: Props) {
                 track={t}
                 active={player.currentKey === t.id}
                 playing={player.playing}
-                analyser={player.analyser}
+                envelope={player.currentKey === t.id ? player.envelope : null}
+                getCurrentTime={player.getCurrentTime}
                 unpublished={t.published === false}
                 onClick={() => onPlay(t.id)}
               />

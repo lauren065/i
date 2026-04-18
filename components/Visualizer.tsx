@@ -2,99 +2,88 @@ import { useEffect, useRef } from 'react';
 import styles from './Visualizer.module.css';
 
 /**
- * Mini inline audio visualizer — a single glyph-sized "blob" (dough) that
- * morphs along with audio amplitude. Sits right after the title text on its
- * baseline, so its position shifts naturally with title length.
+ * Pre-computed envelope delivered by /api/envelope/{track}. The client indexes
+ * into `bands.*[frame]` using `audio.currentTime / (frameMs/1000)`.
+ * This path works on every browser (including iOS Safari) because it doesn't
+ * depend on MediaElementAudioSource → AnalyserNode, which iOS can't feed.
+ */
+export type Envelope = {
+  frameMs: number;
+  durationSec: number;
+  bands: { low: number[]; mid: number[]; high: number[] };
+};
+
+/**
+ * Mini inline audio visualizer — a single glyph-sized "blob" (dough) whose
+ * three cardinal radii are driven by low/mid/high RMS envelopes at the
+ * current playback position.
  *
- * Renders an SVG blob whose 4 control points jitter with different frequency
- * buckets, so the shape squishes and wobbles. When there's no audio source it
- * stays as a static small circle.
+ * `getCurrentTime` is a function so the rAF loop can pull fresh time values
+ * without triggering React re-renders.
  */
 export function Visualizer({
   active,
-  analyser,
+  envelope,
+  getCurrentTime,
 }: {
   active: boolean;
-  analyser?: AnalyserNode | null;
+  envelope?: Envelope | null;
+  getCurrentTime?: () => number;
 }) {
-  // We mutate a single <path> via ref to keep React renders cheap.
   const pathRef = useRef<SVGPathElement | null>(null);
-  const textRef = useRef<SVGTextElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!pathRef.current) return;
 
-    // Idle (no audio / not playing): draw a small circle.
-    if (!active || !analyser) {
+    // Idle: static small circle.
+    if (!active || !envelope || !getCurrentTime) {
       pathRef.current.setAttribute('d', circlePath(50, 50, 14));
-      if (textRef.current) textRef.current.textContent = analyser ? 'a!' : 'N';
       return;
     }
 
-    const buf = new Uint8Array(analyser.frequencyBinCount);
-    const n = analyser.frequencyBinCount;
-    // Sample 4 perceptual bands from the usable (lower) third of the spectrum.
-    const end = Math.floor(n * 0.33);
-    const bands: Array<[number, number]> = [];
-    for (let i = 0; i < 4; i++) {
-      const lo = Math.floor((end * i) / 4);
-      const hi = Math.floor((end * (i + 1)) / 4);
-      bands.push([lo, Math.max(hi, lo + 1)]);
+    const { frameMs, bands } = envelope;
+    const nFrames = Math.min(bands.low.length, bands.mid.length, bands.high.length);
+    if (nFrames === 0) {
+      pathRef.current.setAttribute('d', circlePath(50, 50, 14));
+      return;
     }
+    const frameSec = frameMs / 1000;
 
-    // Strong perceptual curve: small values get lifted, large ones stretched.
-    // Uses peak (not average) per band — more responsive to transients.
-    const ctx: AudioContext | undefined = (analyser as any).context;
     const tick = () => {
-      analyser.getByteFrequencyData(buf);
-      const levels: number[] = [];
-      let peakAll = 0;
-      for (const [lo, hi] of bands) {
-        let peak = 0;
-        for (let k = lo; k < hi; k++) if (buf[k] > peak) peak = buf[k];
-        if (peak > peakAll) peakAll = peak;
-        let v = peak / 255;
-        v = Math.pow(v, 0.55);
-        levels.push(v);
-      }
+      const t = getCurrentTime();
+      let i = Math.floor(t / frameSec);
+      if (i < 0) i = 0;
+      else if (i >= nFrames) i = nFrames - 1;
+
+      // Perceptual curve — lifts quiet parts, punches loud ones.
+      const lv = (x: number) => Math.pow(Math.min(1, Math.max(0, x)), 0.55);
+      const low  = lv(bands.low[i]);
+      const mid  = lv(bands.mid[i]);
+      const high = lv(bands.high[i]);
+
       const base = 10;
       const maxExtra = 34;
-      const rBottom = base + levels[0] * maxExtra;
-      const rRight  = base + levels[1] * maxExtra;
-      const rTop    = base + levels[2] * maxExtra;
-      const rLeft   = base + levels[3] * maxExtra;
+      // Flipped upside-down: low drives bottom, high drives top.
+      const rBottom = base + low  * maxExtra;
+      const rRight  = base + mid  * maxExtra;
+      const rTop    = base + high * maxExtra;
+      const rLeft   = base + mid  * maxExtra;
       const d = blobPath(50, 50, rTop, rRight, rBottom, rLeft);
       if (pathRef.current) pathRef.current.setAttribute('d', d);
-      if (textRef.current) {
-        // TEMP diagnostic: show peak (0..255) + ctx state code
-        const s = ctx?.state === 'running' ? 'R' : ctx?.state === 'suspended' ? 'S' : ctx?.state === 'closed' ? 'C' : '?';
-        textRef.current.textContent = `${peakAll}${s}`;
-      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [active, analyser]);
+  }, [active, envelope, getCurrentTime]);
 
   return (
     <span className={styles.wrap} aria-hidden>
       <svg className={styles.svg} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
         <path ref={pathRef} d={circlePath(50, 50, 14)} fill="currentColor" />
-        {/* TEMP diagnostic overlay */}
-        <text
-          ref={textRef}
-          x="50"
-          y="56"
-          textAnchor="middle"
-          fontSize="40"
-          fontFamily="monospace"
-          fontWeight="700"
-          fill="red"
-          style={{ pointerEvents: 'none' }}
-        >?</text>
       </svg>
     </span>
   );
@@ -115,8 +104,7 @@ function circlePath(cx: number, cy: number, r: number): string {
 
 /**
  * Asymmetric blob: same 4-arc topology as the circle, but each cardinal radius
- * can differ. This squishes the shape into a soft, dough-like form that wobbles
- * as the radii change. Control handles use each arc's own radius for kappa.
+ * can differ. Control handles use each arc's own radius for kappa.
  */
 function blobPath(
   cx: number,
@@ -127,22 +115,17 @@ function blobPath(
   rL: number,
 ): string {
   const K = 0.5522847498;
-  const top   = { x: cx,         y: cy - rT };
-  const right = { x: cx + rR,    y: cy      };
-  const bot   = { x: cx,         y: cy + rB };
-  const left  = { x: cx - rL,    y: cy      };
+  const top   = { x: cx,      y: cy - rT };
+  const right = { x: cx + rR, y: cy      };
+  const bot   = { x: cx,      y: cy + rB };
+  const left  = { x: cx - rL, y: cy      };
 
-  // For each quarter-arc we use the neighboring radii for tangent lengths.
-  // Top → Right quadrant
   const tR1 = { x: cx + rR * K, y: cy - rT     };
   const tR2 = { x: cx + rR,     y: cy - rT * K };
-  // Right → Bottom
   const rB1 = { x: cx + rR,     y: cy + rB * K };
   const rB2 = { x: cx + rB * K, y: cy + rB     };
-  // Bottom → Left
   const bL1 = { x: cx - rL * K, y: cy + rB     };
   const bL2 = { x: cx - rL,     y: cy + rB * K };
-  // Left → Top
   const lT1 = { x: cx - rL,     y: cy - rT * K };
   const lT2 = { x: cx - rT * K, y: cy - rT     };
 

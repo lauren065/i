@@ -24,9 +24,9 @@ export function Visualizer({
   useEffect(() => {
     if (!pathRef.current) return;
 
-    // Idle (no audio / not playing): draw a small circle.
+    // Idle (no audio / not playing): draw a small circle at minimum radius.
     if (!active || !analyser) {
-      pathRef.current.setAttribute('d', circlePath(50, 50, 14));
+      pathRef.current.setAttribute('d', circlePath(50, 50, 18));
       return;
     }
 
@@ -41,24 +41,30 @@ export function Visualizer({
       bands.push([lo, Math.max(hi, lo + 1)]);
     }
 
-    // Strong perceptual curve: small values get lifted, large ones stretched.
-    // Uses peak (not average) per band — more responsive to transients.
+    // Overall loudness drives common radius; per-band deltas only wobble the shape.
+    // This keeps the blob from disappearing during quiet moments while still
+    // squishing with each beat/transient.
+    const MIN_R = 18;      // never smaller than this — blob stays clearly visible
+    const MAX_R = 44;      // cap so it never clips the viewBox
+    const WOBBLE = 7;      // per-axis asymmetry amplitude
+
     const tick = () => {
       analyser.getByteFrequencyData(buf);
       const levels: number[] = [];
       for (const [lo, hi] of bands) {
         let peak = 0;
         for (let k = lo; k < hi; k++) if (buf[k] > peak) peak = buf[k];
-        let v = peak / 255;            // 0..1
-        v = Math.pow(v, 0.55);         // expand dynamic range (lifts quiet parts)
+        let v = peak / 255;
+        v = Math.pow(v, 0.55);
         levels.push(v);
       }
-      const base = 10;
-      const maxExtra = 34;
-      const rTop    = base + levels[0] * maxExtra;
-      const rRight  = base + levels[1] * maxExtra;
-      const rBottom = base + levels[2] * maxExtra;
-      const rLeft   = base + levels[3] * maxExtra;
+      const avg = (levels[0] + levels[1] + levels[2] + levels[3]) / 4;
+      const common = MIN_R + avg * (MAX_R - MIN_R);
+
+      const rTop    = common + (levels[0] - avg) * WOBBLE;
+      const rRight  = common + (levels[1] - avg) * WOBBLE;
+      const rBottom = common + (levels[2] - avg) * WOBBLE;
+      const rLeft   = common + (levels[3] - avg) * WOBBLE;
       const d = blobPath(50, 50, rTop, rRight, rBottom, rLeft);
       if (pathRef.current) pathRef.current.setAttribute('d', d);
 
@@ -73,7 +79,7 @@ export function Visualizer({
   return (
     <span className={styles.wrap} aria-hidden>
       <svg className={styles.svg} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        <path ref={pathRef} d={circlePath(50, 50, 14)} fill="currentColor" />
+        <path ref={pathRef} d={circlePath(50, 50, 18)} fill="currentColor" />
       </svg>
     </span>
   );

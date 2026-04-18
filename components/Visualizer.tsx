@@ -30,6 +30,22 @@ export function Visualizer({
       return;
     }
 
+    // TEMP DEBUG: log one sample/sec so we can see whether the analyser is
+    // returning real frequency data or all zeros.
+    const debug = new Uint8Array(analyser.frequencyBinCount);
+    const debugTimer = setInterval(() => {
+      analyser.getByteFrequencyData(debug);
+      let sum = 0, peak = 0;
+      for (let i = 0; i < debug.length; i++) {
+        sum += debug[i];
+        if (debug[i] > peak) peak = debug[i];
+      }
+      // eslint-disable-next-line no-console
+      console.log('[viz] avg=', (sum / debug.length).toFixed(1),
+                  ' peak=', peak,
+                  ' ctxState=', ((analyser as any).context?.state));
+    }, 1000);
+
     const buf = new Uint8Array(analyser.frequencyBinCount);
     const n = analyser.frequencyBinCount;
     // Sample 4 perceptual bands from the usable (lower) third of the spectrum.
@@ -76,6 +92,7 @@ export function Visualizer({
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      clearInterval(debugTimer);
     };
   }, [active, analyser]);
 

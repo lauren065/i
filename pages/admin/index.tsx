@@ -299,7 +299,6 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
 
       <audio
         ref={player.audioRef}
-        crossOrigin="anonymous"
         onTimeUpdate={player.onTimeUpdate}
         onLoadedMetadata={player.onLoadedMetadata}
         onEnded={player.onEnded}

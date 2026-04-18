@@ -81,8 +81,12 @@ export function PlayableTrackRow({
       onClick={onClick}
     >
       <span className={styles.titleWithViz}>
-        {track.title}
-        {active && playing && <Visualizer active analyser={analyser} />}
+        {active && playing && (
+          <span className={styles.vizSlot}>
+            <Visualizer active analyser={analyser} />
+          </span>
+        )}
+        <span className={styles.title}>{track.title}</span>
       </span>
       <span className={styles.time}>{formatTime(track.duration)}</span>
     </li>

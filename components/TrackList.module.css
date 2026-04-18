@@ -23,15 +23,26 @@
 .row.active { color: var(--color-fg); }
 
 .titleWithViz {
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  white-space: nowrap;
+  position: relative;
+  min-width: 0;
 }
 .title {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Visualizer sits to the LEFT of the title, absolute-positioned so it
+ * never affects title indentation across rows. Flipped upside-down. */
+.vizSlot {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.4em;
+  transform: translateY(-50%) scaleY(-1);
+  pointer-events: none;
 }
 .time {
   color: var(--color-fg-dim);

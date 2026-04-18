@@ -61,9 +61,12 @@ export function Visualizer({
       const avg = (levels[0] + levels[1] + levels[2] + levels[3]) / 4;
       const common = MIN_R + avg * (MAX_R - MIN_R);
 
-      const rTop    = common + (levels[0] - avg) * WOBBLE;
+      // Visually flipped upside-down: low-freq band drives the BOTTOM bulge
+      // (highs on top). Keeping the transform off the wrapper avoids GPU
+      // layer issues that were freezing path updates.
+      const rBottom = common + (levels[0] - avg) * WOBBLE;
       const rRight  = common + (levels[1] - avg) * WOBBLE;
-      const rBottom = common + (levels[2] - avg) * WOBBLE;
+      const rTop    = common + (levels[2] - avg) * WOBBLE;
       const rLeft   = common + (levels[3] - avg) * WOBBLE;
       const d = blobPath(50, 50, rTop, rRight, rBottom, rLeft);
       if (pathRef.current) pathRef.current.setAttribute('d', d);

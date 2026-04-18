@@ -33,15 +33,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Visualizer sits to the LEFT of the title. Flipped upside-down. Size 1.3em
- * for presence; only renders on the currently playing row so other rows
- * keep their original indentation. */
+/* Visualizer sits to the LEFT of the title. Size 1.3em for presence;
+ * only renders on the currently playing row so other rows keep their
+ * original indentation. (Vertical flip is done inside the blob itself.) */
 .vizSlot {
   display: inline-flex;
   flex-shrink: 0;
   width: 1.3em;
   height: 1.3em;
-  transform: scaleY(-1);
   pointer-events: none;
 }
 .time {

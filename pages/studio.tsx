@@ -15,7 +15,8 @@ import {
 const SECTION_ORDER = ['Disc 1', 'Disc 2', 'Disc 3', 'Pure WInter', 'Singles'];
 
 export const getServerSideProps: GetServerSideProps<{ tracks: Track[] }> = async () => {
-  return { props: { tracks: readTracks() } };
+  const tracks = readTracks().filter((t) => t.published !== false);
+  return { props: { tracks } };
 };
 
 export default function Studio({ tracks }: { tracks: Track[] }) {

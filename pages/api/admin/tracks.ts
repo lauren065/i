@@ -11,13 +11,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === 'PUT') {
     // Update metadata for a single track by id
-    const { id, title, section } = req.body || {};
+    const { id, title, section, published } = req.body || {};
     if (!id) return res.status(400).json({ error: 'id required' });
     const tracks = readTracks();
     const idx = tracks.findIndex((t) => t.id === id);
     if (idx < 0) return res.status(404).json({ error: 'track not found' });
     if (typeof title === 'string' && title.trim()) tracks[idx].title = title.trim();
     if (typeof section === 'string' && section.trim()) tracks[idx].section = section.trim();
+    if (typeof published === 'boolean') tracks[idx].published = published;
+    tracks[idx].updatedAt = new Date().toISOString();
     writeTracks(tracks);
     return res.status(200).json({ ok: true, track: tracks[idx] });
   }

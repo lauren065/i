@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import { signResourcePattern, getCfBaseUrl } from '../../../lib/cf-signer';
-import { hlsPath } from '../../../lib/state';
+import { hlsPath, readTracks } from '../../../lib/state';
+import { readAdminClaims } from '../../../lib/auth';
 
 // Guard against path traversal — only [a-z0-9-/] slugs allowed
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*$/;
@@ -14,6 +15,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const slug = track.join('/');
   if (!SLUG_RE.test(slug)) {
     return res.status(400).json({ error: 'invalid slug format' });
+  }
+
+  // Block unpublished tracks from public access. Admins may preview.
+  const meta = readTracks().find((t) => t.id === slug);
+  if (meta && meta.published === false && !readAdminClaims(req)) {
+    return res.status(404).json({ error: 'track not found' });
   }
 
   let m3u8: string;

@@ -121,20 +121,18 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
     }
   };
 
-  const editTrack = async (id: string) => {
-    const t = tracks.find((x) => x.id === id);
-    if (!t) return;
-    const title = prompt('제목', t.title);
-    if (title === null || title.trim() === '' || title === t.title) return;
+  const patchTrack = async (id: string, patch: Partial<{ title: string; section: string; published: boolean }>) => {
+    // Optimistic update for snappy UI
+    setTracks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
     const r = await fetch('/api/admin/tracks', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, title: title.trim() }),
+      body: JSON.stringify({ id, ...patch }),
     });
-    if (r.ok) await refresh();
-    else {
+    if (!r.ok) {
       const j = await r.json().catch(() => ({}));
       setError(j.error || `update failed: HTTP ${r.status}`);
+      await refresh(); // rollback to server truth
     }
   };
 
@@ -210,12 +208,9 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
                 <AdminTrackRow
                   key={t.id}
                   track={t}
-                  actions={
-                    <>
-                      <Button variant="secondary" size="sm" onClick={() => editTrack(t.id)}>edit</Button>
-                      <Button variant="danger" size="sm" onClick={() => deleteTrack(t.id)}>delete</Button>
-                    </>
-                  }
+                  onTitleChange={(newTitle) => patchTrack(t.id, { title: newTitle })}
+                  onTogglePublished={() => patchTrack(t.id, { published: t.published === false })}
+                  onDelete={() => deleteTrack(t.id)}
                 />
               ))}
             </TrackSection>

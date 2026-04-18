@@ -33,15 +33,67 @@
   font-size: var(--text-sm);
 }
 
-/* ── Admin variant (edit/delete actions) ── */
+/* ── Admin variant (inline edit + publish toggle + delete) ── */
 .adminRow {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: var(--space-4);
+  grid-template-columns: 16px 1fr auto auto auto;
+  gap: var(--space-3);
   align-items: center;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-subtle);
   font-size: var(--text-base);
+}
+
+.adminRow.unpublished {
+  opacity: 0.45;
+}
+.adminRow.unpublished:hover {
+  opacity: 0.85;
+}
+
+.pubDot {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  border-radius: 50%;
+  transition: color var(--duration-fast) var(--easing);
+}
+.pubDotOn { color: var(--color-fg); }
+.pubDotOff { color: var(--color-fg-dim); }
+.pubDot:hover { color: var(--color-fg-muted); }
+
+.titleEditable {
+  cursor: text;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--easing);
+}
+.titleEditable:hover {
+  background: var(--color-bg-surface);
+}
+
+.titleInput {
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-fg-dim);
+  padding: 2px 6px;
+  color: var(--color-fg);
+  font-size: var(--text-base);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  min-width: 0;
+}
+.titleInput:focus {
+  outline: none;
+  border-color: var(--color-fg-subtle);
 }
 
 .id {

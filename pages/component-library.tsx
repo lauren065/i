@@ -41,6 +41,8 @@ function Entry({ name, notes, children }: { name: string; notes?: string; childr
 export default function ComponentLibrary() {
   const [active, setActive] = useState<string | null>(null);
   const [progress, setProgress] = useState(42);
+  const [titleMap, setTitleMap] = useState<Record<string, string>>({});
+  const [publishMap, setPublishMap] = useState<Record<string, boolean>>({});
 
   return (
     <>
@@ -125,20 +127,26 @@ export default function ComponentLibrary() {
           </TrackSection>
         </Entry>
 
-        <Entry name="AdminTrackRow" notes="Admin row with id + duration + actions slot.">
+        <Entry
+          name="AdminTrackRow"
+          notes="● public / ○ private toggle, click title to rename inline, delete button. Unpublished rows dimmed."
+        >
           <TrackSection title="Demo">
-            {demoTracks.map((t) => (
-              <AdminTrackRow
-                key={t.id}
-                track={t}
-                actions={
-                  <>
-                    <Button size="sm" variant="secondary">edit</Button>
-                    <Button size="sm" variant="danger">delete</Button>
-                  </>
-                }
-              />
-            ))}
+            {demoTracks.map((t) => {
+              const published = publishMap[t.id] !== false;
+              const title = titleMap[t.id] ?? t.title;
+              return (
+                <AdminTrackRow
+                  key={t.id}
+                  track={{ ...t, title, published }}
+                  onTitleChange={(next) => setTitleMap((m) => ({ ...m, [t.id]: next }))}
+                  onTogglePublished={() =>
+                    setPublishMap((m) => ({ ...m, [t.id]: !published }))
+                  }
+                  onDelete={() => alert('demo: delete action')}
+                />
+              );
+            })}
           </TrackSection>
         </Entry>
 

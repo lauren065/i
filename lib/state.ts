@@ -33,11 +33,35 @@ export type ProductBase = {
   published?: boolean;
 };
 
+/**
+ * One immutable rendering of a track. Audio is HLS under `hlsSlug`, which
+ * doubles as the path suffix in both STATE_DIR (`/hls/{hlsSlug}`) and S3
+ * (`studio/{hlsSlug}`). Legacy v1 uses the bare track id; new versions use
+ * `{trackId}/{id}` (e.g. `disc-1/balad-piano/v2`).
+ */
+export type TrackVersion = {
+  id: string;               // 'v1', 'v2', ...
+  createdAt: string;
+  duration: number;
+  hlsSlug: string;          // path suffix for HLS storage
+  note?: string;
+};
+
 export type MusicProduct = ProductBase & {
   type: 'music';
-  duration: number;         // seconds
+  duration: number;         // seconds (mirrors active version's duration for convenience)
   srcRel?: string;          // original upload path relative to STATE_DIR
+  versions?: TrackVersion[];
+  activeVersionId?: string; // id from `versions`; missing/empty = legacy single-version
 };
+
+/** Resolve the HLS slug for the active rendering of a track. */
+export function activeHlsSlug(track: MusicProduct): string {
+  if (!track.versions || track.versions.length === 0) return track.id;
+  const active = track.versions.find((v) => v.id === track.activeVersionId)
+    ?? track.versions[track.versions.length - 1];
+  return active.hlsSlug;
+}
 
 export type LetterProduct = ProductBase & {
   type: 'letter';

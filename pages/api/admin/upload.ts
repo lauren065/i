@@ -3,7 +3,7 @@ import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 import { requireAdmin } from '../../../lib/auth';
-import { readTracks, writeTracks, uploadsDir, STATE_DIR } from '../../../lib/state';
+import { readTracks, writeTracks, uploadsDir, TrackVersion } from '../../../lib/state';
 import {
   slugify,
   probeDuration,
@@ -18,8 +18,17 @@ export const config = {
   },
 };
 
-const MAX_AUDIO_BYTES = 500 * 1024 * 1024; // 500MB per file
+const MAX_AUDIO_BYTES = 500 * 1024 * 1024;
 const ALLOWED_EXT = new Set(['.mp3', '.wav', '.m4a', '.flac', '.ogg']);
+
+function nextVersionId(existing: TrackVersion[]): string {
+  const nums = existing
+    .map((v) => /^v(\d+)$/.exec(v.id)?.[1])
+    .filter(Boolean)
+    .map((s) => parseInt(s as string, 10));
+  const n = nums.length ? Math.max(...nums) + 1 : 1;
+  return `v${n}`;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!requireAdmin(req, res)) return;
@@ -28,7 +37,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'method not allowed' });
   }
 
-  // Ensure uploads dir exists
   fs.mkdirSync(uploadsDir(), { recursive: true });
 
   const form = formidable({
@@ -46,19 +54,81 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'multipart parse failed', detail: e.message });
   }
 
-  const title = (fields.title?.[0] || '').trim();
-  const section = (fields.section?.[0] || '').trim();
+  const trackId = (fields.trackId?.[0] || '').trim();
+  const note = (fields.note?.[0] || '').trim() || undefined;
   const file = files.file?.[0];
 
-  if (!title) return res.status(400).json({ error: 'title required' });
-  if (!section) return res.status(400).json({ error: 'section required' });
   if (!file) return res.status(400).json({ error: 'file required' });
-
   const ext = path.extname(file.originalFilename || file.newFilename).toLowerCase();
   if (!ALLOWED_EXT.has(ext)) {
     fs.unlinkSync(file.filepath);
     return res.status(400).json({ error: `unsupported file extension: ${ext}` });
   }
+
+  const tracks = readTracks();
+
+  /* ─── Branch A: new version of an existing track ─── */
+  if (trackId) {
+    const idx = tracks.findIndex((t) => t.id === trackId);
+    if (idx < 0) {
+      fs.unlinkSync(file.filepath);
+      return res.status(404).json({ error: `track not found: ${trackId}` });
+    }
+    const track = tracks[idx];
+    const now = new Date().toISOString();
+
+    try {
+      const duration = await probeDuration(file.filepath);
+
+      // Initialize versions[] on first new-version upload: legacy becomes v1.
+      if (!track.versions || track.versions.length === 0) {
+        track.versions = [{
+          id: 'v1',
+          createdAt: track.createdAt || now,
+          duration: track.duration,
+          hlsSlug: track.id, // legacy root path
+          note: 'legacy',
+        }];
+        track.activeVersionId = 'v1';
+      }
+
+      const newId = nextVersionId(track.versions);
+      const hlsSlug = `${track.id}/${newId}`;
+
+      await transcodeToHls(file.filepath, hlsSlug);
+      await uploadHlsToS3(hlsSlug);
+
+      track.versions.push({
+        id: newId,
+        createdAt: now,
+        duration,
+        hlsSlug,
+        note,
+      });
+      track.activeVersionId = newId;
+      track.duration = duration; // mirror active for convenience
+      track.updatedAt = now;
+
+      writeTracks(tracks);
+      try { fs.unlinkSync(file.filepath); } catch {}
+      return res.status(200).json({
+        ok: true,
+        id: trackId,
+        versionId: newId,
+        duration,
+      });
+    } catch (e: any) {
+      try { fs.unlinkSync(file.filepath); } catch {}
+      return res.status(500).json({ error: 'pipeline failed', detail: e.message });
+    }
+  }
+
+  /* ─── Branch B: brand new track ─── */
+  const title = (fields.title?.[0] || '').trim();
+  const section = (fields.section?.[0] || '').trim();
+
+  if (!title) return res.status(400).json({ error: 'title required' });
+  if (!section) return res.status(400).json({ error: 'section required' });
 
   const sectionSlug = slugify(section);
   const titleSlug = slugify(title);
@@ -68,8 +138,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const id = `${sectionSlug}/${titleSlug}`;
 
-  // Collision check
-  const tracks = readTracks();
   if (tracks.some((t) => t.id === id)) {
     fs.unlinkSync(file.filepath);
     return res.status(409).json({ error: `track id conflict: ${id}` });
@@ -95,17 +163,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       published: true,
     });
     writeTracks(tracks);
-
-    // Clean up source upload (HLS output is kept at STATE_DIR/hls)
-    try {
-      fs.unlinkSync(file.filepath);
-    } catch {}
-
+    try { fs.unlinkSync(file.filepath); } catch {}
     return res.status(200).json({ ok: true, id, title, section, duration });
   } catch (e: any) {
-    try {
-      fs.unlinkSync(file.filepath);
-    } catch {}
+    try { fs.unlinkSync(file.filepath); } catch {}
     return res.status(500).json({ error: 'pipeline failed', detail: e.message });
   }
 }

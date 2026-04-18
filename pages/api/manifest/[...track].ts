@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import { signResourcePattern, getCfBaseUrl } from '../../../lib/cf-signer';
-import { hlsPath, readTracks } from '../../../lib/state';
+import { hlsPath, readTracks, activeHlsSlug } from '../../../lib/state';
 import { readAdminClaims } from '../../../lib/auth';
 
 // Guard against path traversal — only [a-z0-9-/] slugs allowed
@@ -17,21 +17,25 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: 'invalid slug format' });
   }
 
-  // Block unpublished tracks from public access. Admins may preview.
   const meta = readTracks().find((t) => t.id === slug);
+
+  // Block unpublished tracks from public access. Admins may preview.
   if (meta && meta.published === false && !readAdminClaims(req)) {
     return res.status(404).json({ error: 'track not found' });
   }
 
+  // Resolve active version (falls back to slug itself for legacy tracks)
+  const effectiveSlug = meta ? activeHlsSlug(meta) : slug;
+
   let m3u8: string;
   try {
-    m3u8 = fs.readFileSync(hlsPath(slug), 'utf-8');
+    m3u8 = fs.readFileSync(hlsPath(effectiveSlug), 'utf-8');
   } catch {
     return res.status(404).json({ error: 'track not found' });
   }
 
   const cfBase = getCfBaseUrl();
-  const resourcePattern = `${cfBase}/studio/${slug}/*`;
+  const resourcePattern = `${cfBase}/studio/${effectiveSlug}/*`;
   let sigQuery: string;
   try {
     sigQuery = signResourcePattern(resourcePattern, 600);
@@ -45,7 +49,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     .map((line) => {
       const trimmed = line.trim();
       if (trimmed && !trimmed.startsWith('#') && trimmed.endsWith('.ts')) {
-        return `${cfBase}/studio/${slug}/${trimmed}?${sigQuery}`;
+        return `${cfBase}/studio/${effectiveSlug}/${trimmed}?${sigQuery}`;
       }
       return line;
     })

@@ -33,22 +33,24 @@
   font-size: var(--text-sm);
 }
 
-/* ── Admin variant (inline edit + publish toggle + delete) ── */
+/* ── Admin variant (inline edit + publish toggle + versions + delete) ── */
+.adminRowWrap {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.adminRowWrap.unpublished {
+  opacity: 0.45;
+}
+.adminRowWrap.unpublished:hover {
+  opacity: 0.85;
+}
+
 .adminRow {
   display: grid;
   grid-template-columns: 16px 1fr auto auto auto;
   gap: var(--space-3);
   align-items: center;
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border-subtle);
   font-size: var(--text-base);
-}
-
-.adminRow.unpublished {
-  opacity: 0.45;
-}
-.adminRow.unpublished:hover {
-  opacity: 0.85;
 }
 
 .pubDot {
@@ -105,4 +107,126 @@
 .actions {
   display: flex;
   gap: var(--space-2);
+  align-items: center;
+}
+
+/* ── Version badge + panel ── */
+.versionBadge {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--color-fg-muted);
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--easing), background var(--duration-fast) var(--easing);
+}
+.versionBadge:hover { color: var(--color-fg); background: var(--color-fg-faint); }
+.versionBadgeOpen { color: var(--color-fg); background: var(--color-fg-faint); }
+
+.versionPanel {
+  padding: var(--space-3) var(--space-3) var(--space-4) calc(16px + var(--space-3) + var(--space-3));
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.versionUploader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.versionUploader input[type="file"] {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  max-width: 300px;
+}
+.versionUploader input[type="file"]::file-selector-button {
+  background: var(--color-border);
+  color: var(--color-fg-muted);
+  border: 0;
+  padding: var(--space-1) var(--space-3);
+  margin-right: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.versionNote {
+  flex: 1;
+  min-width: 160px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-fg-faint);
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+.versionNote:focus { outline: none; border-color: var(--color-fg-subtle); }
+
+.versionError {
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+}
+
+.versionList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.versionRow {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+.versionRow:hover {
+  background: var(--color-bg-elevated);
+}
+
+.versionId {
+  font-family: var(--font-mono);
+  color: var(--color-fg-muted);
+}
+.versionActive .versionId { color: var(--color-fg); }
+
+.versionTag {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-fg);
+  background: var(--color-fg-faint);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.versionMeta {
+  color: var(--color-fg-dim);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.versionActions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.versionEmpty {
+  color: var(--color-fg-dim);
+  font-size: var(--text-xs);
+  padding: var(--space-2);
 }

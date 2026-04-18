@@ -11,7 +11,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === 'PUT') {
     // Update metadata for a single track by id
-    const { id, title, section, published } = req.body || {};
+    const { id, title, section, published, activeVersionId } = req.body || {};
     if (!id) return res.status(400).json({ error: 'id required' });
     const tracks = readTracks();
     const idx = tracks.findIndex((t) => t.id === id);
@@ -19,6 +19,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (typeof title === 'string' && title.trim()) tracks[idx].title = title.trim();
     if (typeof section === 'string' && section.trim()) tracks[idx].section = section.trim();
     if (typeof published === 'boolean') tracks[idx].published = published;
+    if (typeof activeVersionId === 'string') {
+      const v = tracks[idx].versions?.find((x) => x.id === activeVersionId);
+      if (!v) return res.status(400).json({ error: `version not found: ${activeVersionId}` });
+      tracks[idx].activeVersionId = activeVersionId;
+      tracks[idx].duration = v.duration; // mirror active duration
+    }
     tracks[idx].updatedAt = new Date().toISOString();
     writeTracks(tracks);
     return res.status(200).json({ ok: true, track: tracks[idx] });

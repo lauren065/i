@@ -121,7 +121,10 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
     }
   };
 
-  const patchTrack = async (id: string, patch: Partial<{ title: string; section: string; published: boolean }>) => {
+  const patchTrack = async (
+    id: string,
+    patch: Partial<{ title: string; section: string; published: boolean; activeVersionId: string }>
+  ) => {
     // Optimistic update for snappy UI
     setTracks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
     const r = await fetch('/api/admin/tracks', {
@@ -133,6 +136,31 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
       const j = await r.json().catch(() => ({}));
       setError(j.error || `update failed: HTTP ${r.status}`);
       await refresh(); // rollback to server truth
+    } else {
+      // For version-affecting changes, pull fresh server state so we see new duration/active
+      if ('activeVersionId' in patch) await refresh();
+    }
+  };
+
+  const uploadVersion = async (trackId: string, file: File, note?: string) => {
+    const fd = new FormData();
+    fd.append('trackId', trackId);
+    fd.append('file', file);
+    if (note) fd.append('note', note);
+    const r = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || `upload failed: HTTP ${r.status}`);
+    }
+    await refresh();
+  };
+
+  const deleteVersion = async (trackId: string, versionId: string) => {
+    const r = await fetch(`/api/admin/versions/${trackId}/${versionId}`, { method: 'DELETE' });
+    if (r.ok) await refresh();
+    else {
+      const j = await r.json().catch(() => ({}));
+      setError(j.error || `version delete failed: HTTP ${r.status}`);
     }
   };
 
@@ -208,9 +236,14 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
                 <AdminTrackRow
                   key={t.id}
                   track={t}
+                  versions={t.versions}
+                  activeVersionId={t.activeVersionId}
                   onTitleChange={(newTitle) => patchTrack(t.id, { title: newTitle })}
                   onTogglePublished={() => patchTrack(t.id, { published: t.published === false })}
                   onDelete={() => deleteTrack(t.id)}
+                  onUploadVersion={(file, note) => uploadVersion(t.id, file, note)}
+                  onSetActiveVersion={(vid) => patchTrack(t.id, { activeVersionId: vid })}
+                  onDeleteVersion={(vid) => deleteVersion(t.id, vid)}
                 />
               ))}
             </TrackSection>

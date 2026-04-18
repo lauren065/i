@@ -24,7 +24,7 @@
 
 .titleWithViz {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   overflow: hidden;
   white-space: nowrap;
 }

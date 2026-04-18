@@ -59,8 +59,10 @@ export function useHlsPlayer(): UseHlsPlayer {
     const ctx = new AudioCtx();
     const src = ctx.createMediaElementSource(audio);
     const node = ctx.createAnalyser();
-    node.fftSize = 256;
-    node.smoothingTimeConstant = 0.75;
+    node.fftSize = 512;
+    node.smoothingTimeConstant = 0.5; // less smoothing = more visible dynamics
+    node.minDecibels = -80; // extend perceived loud range
+    node.maxDecibels = -20;
     src.connect(node);
     node.connect(ctx.destination);
     ctxRef.current = ctx;

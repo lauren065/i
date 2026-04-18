@@ -26,7 +26,7 @@ export function Visualizer({
 
     // Idle (no audio / not playing): draw a small circle.
     if (!active || !analyser) {
-      pathRef.current.setAttribute('d', circlePath(50, 50, 22));
+      pathRef.current.setAttribute('d', circlePath(50, 50, 14));
       return;
     }
 
@@ -41,18 +41,20 @@ export function Visualizer({
       bands.push([lo, Math.max(hi, lo + 1)]);
     }
 
+    // Strong perceptual curve: small values get lifted, large ones stretched.
+    // Uses peak (not average) per band — more responsive to transients.
     const tick = () => {
       analyser.getByteFrequencyData(buf);
       const levels: number[] = [];
       for (const [lo, hi] of bands) {
-        let sum = 0;
-        for (let k = lo; k < hi; k++) sum += buf[k];
-        levels.push(sum / (hi - lo) / 255); // 0..1
+        let peak = 0;
+        for (let k = lo; k < hi; k++) if (buf[k] > peak) peak = buf[k];
+        let v = peak / 255;            // 0..1
+        v = Math.pow(v, 0.55);         // expand dynamic range (lifts quiet parts)
+        levels.push(v);
       }
-      // Overall energy drives size; each band biases one axis.
-      const avg = (levels[0] + levels[1] + levels[2] + levels[3]) / 4;
-      const base = 22;
-      const maxExtra = 12;
+      const base = 10;
+      const maxExtra = 34;
       const rTop    = base + levels[0] * maxExtra;
       const rRight  = base + levels[1] * maxExtra;
       const rBottom = base + levels[2] * maxExtra;
@@ -71,7 +73,7 @@ export function Visualizer({
   return (
     <span className={styles.wrap} aria-hidden>
       <svg className={styles.svg} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        <path ref={pathRef} d={circlePath(50, 50, 22)} fill="currentColor" />
+        <path ref={pathRef} d={circlePath(50, 50, 14)} fill="currentColor" />
       </svg>
     </span>
   );

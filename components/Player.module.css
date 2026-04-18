@@ -58,11 +58,14 @@
 }
 .progress.seekable {
   cursor: pointer;
-  /* Expand hit area without growing visual size */
-  padding: 8px 0;
+  /* Expand hit area without growing visual size.
+   * Visible track stays 2px (drawn via ::before centered at top:50%),
+   * but pointer hit extends 20px above and below. */
+  padding: 20px 0;
   background: transparent;
-  margin-top: -8px;
-  margin-bottom: calc(var(--space-1) - 8px);
+  margin-top: -20px;
+  margin-bottom: calc(var(--space-1) - 20px);
+  touch-action: none;
 }
 .progress.seekable::before {
   content: '';

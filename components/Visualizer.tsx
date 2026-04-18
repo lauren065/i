@@ -19,6 +19,7 @@ export function Visualizer({
 }) {
   // We mutate a single <path> via ref to keep React renders cheap.
   const pathRef = useRef<SVGPathElement | null>(null);
+  const textRef = useRef<SVGTextElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function Visualizer({
     // Idle (no audio / not playing): draw a small circle.
     if (!active || !analyser) {
       pathRef.current.setAttribute('d', circlePath(50, 50, 14));
+      if (textRef.current) textRef.current.textContent = analyser ? 'a!' : 'N';
       return;
     }
 
@@ -43,26 +45,32 @@ export function Visualizer({
 
     // Strong perceptual curve: small values get lifted, large ones stretched.
     // Uses peak (not average) per band — more responsive to transients.
+    const ctx: AudioContext | undefined = (analyser as any).context;
     const tick = () => {
       analyser.getByteFrequencyData(buf);
       const levels: number[] = [];
+      let peakAll = 0;
       for (const [lo, hi] of bands) {
         let peak = 0;
         for (let k = lo; k < hi; k++) if (buf[k] > peak) peak = buf[k];
-        let v = peak / 255;            // 0..1
-        v = Math.pow(v, 0.55);         // expand dynamic range (lifts quiet parts)
+        if (peak > peakAll) peakAll = peak;
+        let v = peak / 255;
+        v = Math.pow(v, 0.55);
         levels.push(v);
       }
       const base = 10;
       const maxExtra = 34;
-      // Visually flipped upside-down by swapping top↔bottom band inputs.
       const rBottom = base + levels[0] * maxExtra;
       const rRight  = base + levels[1] * maxExtra;
       const rTop    = base + levels[2] * maxExtra;
       const rLeft   = base + levels[3] * maxExtra;
       const d = blobPath(50, 50, rTop, rRight, rBottom, rLeft);
       if (pathRef.current) pathRef.current.setAttribute('d', d);
-
+      if (textRef.current) {
+        // TEMP diagnostic: show peak (0..255) + ctx state code
+        const s = ctx?.state === 'running' ? 'R' : ctx?.state === 'suspended' ? 'S' : ctx?.state === 'closed' ? 'C' : '?';
+        textRef.current.textContent = `${peakAll}${s}`;
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -75,6 +83,18 @@ export function Visualizer({
     <span className={styles.wrap} aria-hidden>
       <svg className={styles.svg} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
         <path ref={pathRef} d={circlePath(50, 50, 14)} fill="currentColor" />
+        {/* TEMP diagnostic overlay */}
+        <text
+          ref={textRef}
+          x="50"
+          y="56"
+          textAnchor="middle"
+          fontSize="40"
+          fontFamily="monospace"
+          fontWeight="700"
+          fill="red"
+          style={{ pointerEvents: 'none' }}
+        >?</text>
       </svg>
     </span>
   );

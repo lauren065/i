@@ -2,8 +2,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1em;
-  height: 1em;
+  /* 1.6em so the blob reads clearly against the base font size
+   * (≈19px on desktop 12px base, ≈22px on the slightly-larger mobile rendering). */
+  width: 1.6em;
+  height: 1.6em;
   vertical-align: middle;
   line-height: 1;
 }

@@ -116,3 +116,10 @@
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
 }
+
+/* Mobile: put the play/pause on the right for thumb reach (right-handed default) */
+@media (max-width: 640px) {
+  .bar {
+    flex-direction: row-reverse;
+  }
+}

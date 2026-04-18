@@ -4,6 +4,7 @@ export { AppHeader, SimpleHeader, HeaderLink, headerLinkClassName } from './AppH
 export { Heading, Label } from './Heading';
 export { Button, LinkButton } from './Button';
 export { TextInput } from './TextInput';
+export { Switch } from './Switch';
 export { Field, FieldActions } from './Field';
 export { ProgressBar } from './ProgressBar';
 export { Player } from './Player';

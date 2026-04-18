@@ -2,6 +2,7 @@ import { ReactNode, useState, useRef, useEffect } from 'react';
 import styles from './TrackList.module.css';
 import { Heading } from './Heading';
 import { Button } from './Button';
+import { Switch } from './Switch';
 
 export type TrackRef = { id: string; title: string; section: string; duration: number };
 
@@ -31,6 +32,13 @@ function formatRelative(iso: string): string {
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.floor(days / 30)}mo ago`;
   return `${Math.floor(days / 365)}y ago`;
+}
+
+function formatAbsolute(iso?: string): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toISOString().slice(0, 10);
 }
 
 export function TrackSection({ title, children }: { title: string; children: ReactNode }) {
@@ -65,15 +73,23 @@ export function PlayableTrackRow({
   );
 }
 
+type AdminRowTrack = TrackRef & {
+  published?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  srcRel?: string;
+};
+
 /**
- * Admin-style row:
- *  - publish indicator (● public / ○ private), click to toggle
- *  - title (click to edit inline, Enter to save, Esc to cancel)
- *  - id (muted) + duration
- *  - version badge (click to expand version panel)
- *  - delete button
- *
- * Expanded panel shows versions + "new version" uploader.
+ * Admin row:
+ *  - click row → expand/collapse detail panel (shows metadata, publish switch, versions)
+ *  - edit button (outlined) → inline title edit
+ *  - delete button (danger)
+ *  - version count badge (static, derived from versions)
+ *  Panel:
+ *  - Switch to toggle publish
+ *  - Metadata (id, created/updated, source)
+ *  - Version uploader + version list
  */
 export function AdminTrackRow({
   track,
@@ -86,7 +102,7 @@ export function AdminTrackRow({
   onSetActiveVersion,
   onDeleteVersion,
 }: {
-  track: TrackRef & { published?: boolean };
+  track: AdminRowTrack;
   versions?: VersionRef[];
   activeVersionId?: string;
   onTitleChange?: (newTitle: string) => void | Promise<void>;
@@ -99,7 +115,6 @@ export function AdminTrackRow({
   const isPublished = track.published !== false;
   const versionCount = versions?.length ?? 0;
   const hasVersioning = !!onUploadVersion;
-  const activeLabel = activeVersionId || (versionCount > 0 ? versions![versionCount - 1].id : null);
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(track.title);
@@ -119,26 +134,15 @@ export function AdminTrackRow({
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  const handleRowClick = () => {
-    if (editing) return;
-    onTogglePublished?.();
-  };
-
   return (
     <li className={`${styles.adminRowWrap} ${isPublished ? '' : styles.unpublished}`}>
       <div
         className={styles.adminRow}
-        onClick={handleRowClick}
+        onClick={() => { if (!editing) setExpanded((x) => !x); }}
         role="button"
-        aria-pressed={isPublished}
-        title={isPublished ? 'click to unpublish' : 'click to publish'}
+        aria-expanded={expanded}
+        title={expanded ? 'click to collapse' : 'click to view details'}
       >
-        <span
-          className={`${styles.pubDot} ${isPublished ? styles.pubDotOn : styles.pubDotOff}`}
-          aria-hidden
-        >
-          {isPublished ? '●' : '○'}
-        </span>
         {editing ? (
           <input
             ref={inputRef}
@@ -158,29 +162,46 @@ export function AdminTrackRow({
         <span className={styles.id}>{track.id}</span>
         <span className={styles.time}>{formatTime(track.duration)}</span>
         <span className={styles.actions} onClick={stop}>
-          {hasVersioning && (
-            <button
-              type="button"
-              className={`${styles.versionBadge} ${expanded ? styles.versionBadgeOpen : ''}`}
-              onClick={() => setExpanded((x) => !x)}
-              title={versionCount > 0 ? `${versionCount} version${versionCount === 1 ? '' : 's'}` : 'upload new version'}
-            >
-              {activeLabel ?? 'v1'} {expanded ? '▴' : '▾'}
-            </button>
+          {hasVersioning && versionCount > 0 && (
+            <span className={styles.versionCount} title={`${versionCount} version${versionCount === 1 ? '' : 's'}`}>
+              {activeVersionId ?? versions![versionCount - 1].id}
+            </span>
           )}
           <Button variant="outlined" size="sm" onClick={() => setEditing(true)}>edit</Button>
           <Button variant="danger" size="sm" onClick={() => onDelete?.()}>delete</Button>
         </span>
       </div>
-      {expanded && hasVersioning && (
-        <VersionPanel
-          trackTitle={track.title}
-          versions={versions ?? []}
-          activeVersionId={activeVersionId}
-          onUploadVersion={onUploadVersion!}
-          onSetActive={onSetActiveVersion}
-          onDelete={onDeleteVersion}
-        />
+
+      {expanded && (
+        <div className={styles.detailPanel}>
+          <div className={styles.detailRow}>
+            <Switch
+              checked={isPublished}
+              onChange={() => onTogglePublished?.()}
+              label={isPublished ? 'public' : 'private'}
+            />
+          </div>
+
+          <dl className={styles.meta}>
+            <div><dt>id</dt><dd className={styles.mono}>{track.id}</dd></div>
+            <div><dt>section</dt><dd>{track.section}</dd></div>
+            <div><dt>duration</dt><dd>{formatTime(track.duration)}</dd></div>
+            <div><dt>created</dt><dd>{formatAbsolute(track.createdAt)}</dd></div>
+            <div><dt>updated</dt><dd>{formatAbsolute(track.updatedAt)}</dd></div>
+            {track.srcRel && <div><dt>source</dt><dd className={styles.mono}>{track.srcRel}</dd></div>}
+          </dl>
+
+          {hasVersioning && (
+            <VersionPanel
+              trackTitle={track.title}
+              versions={versions ?? []}
+              activeVersionId={activeVersionId}
+              onUploadVersion={onUploadVersion!}
+              onSetActive={onSetActiveVersion}
+              onDelete={onDeleteVersion}
+            />
+          )}
+        </div>
       )}
     </li>
   );
@@ -226,7 +247,9 @@ function VersionPanel({
   const effectiveActive = activeVersionId || versions[versions.length - 1]?.id;
 
   return (
-    <div className={styles.versionPanel}>
+    <div className={styles.versionSection}>
+      <div className={styles.versionHeading}>versions</div>
+
       <div className={styles.versionUploader}>
         <input
           ref={fileInputRef}

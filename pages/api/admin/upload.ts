@@ -59,6 +59,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const file = files.file?.[0];
 
   if (!file) return res.status(400).json({ error: 'file required' });
+
+  /* File creation time: prefer caller-provided lastModified (browser File API),
+   * fall back to filesystem mtime, then to upload-received time. */
+  const uploadedAt = new Date().toISOString();
+  function resolveFileCreatedAt(): string {
+    const lmRaw = fields.fileLastModified?.[0];
+    if (lmRaw) {
+      const ms = Number(lmRaw);
+      if (Number.isFinite(ms) && ms > 0) return new Date(ms).toISOString();
+    }
+    try {
+      const mtime = fs.statSync(file.filepath).mtime;
+      if (mtime.getTime() > 0) return mtime.toISOString();
+    } catch {}
+    return uploadedAt;
+  }
+  const fileCreatedAt = resolveFileCreatedAt();
   const ext = path.extname(file.originalFilename || file.newFilename).toLowerCase();
   if (!ALLOWED_EXT.has(ext)) {
     fs.unlinkSync(file.filepath);
@@ -75,7 +92,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: `track not found: ${trackId}` });
     }
     const track = tracks[idx];
-    const now = new Date().toISOString();
 
     try {
       const duration = await probeDuration(file.filepath);
@@ -84,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!track.versions || track.versions.length === 0) {
         track.versions = [{
           id: 'v1',
-          createdAt: track.createdAt || now,
+          createdAt: track.createdAt || uploadedAt,
           duration: track.duration,
           hlsSlug: track.id, // legacy root path
           note: 'legacy',
@@ -100,14 +116,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       track.versions.push({
         id: newId,
-        createdAt: now,
+        createdAt: fileCreatedAt, // file's own timestamp, not upload time
         duration,
         hlsSlug,
         note,
       });
       track.activeVersionId = newId;
       track.duration = duration; // mirror active for convenience
-      track.updatedAt = now;
+      track.updatedAt = uploadedAt;
 
       writeTracks(tracks);
       try { fs.unlinkSync(file.filepath); } catch {}
@@ -116,6 +132,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: trackId,
         versionId: newId,
         duration,
+        createdAt: fileCreatedAt,
       });
     } catch (e: any) {
       try { fs.unlinkSync(file.filepath); } catch {}
@@ -148,7 +165,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await transcodeToHls(file.filepath, id);
     await uploadHlsToS3(id);
 
-    const now = new Date().toISOString();
     tracks.push({
       id,
       type: 'music',
@@ -158,13 +174,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       titleSlug,
       srcRel: `uploads/${path.basename(file.filepath)}`,
       duration,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: fileCreatedAt, // file's own timestamp, not upload time
+      updatedAt: uploadedAt,
       published: true,
     });
     writeTracks(tracks);
     try { fs.unlinkSync(file.filepath); } catch {}
-    return res.status(200).json({ ok: true, id, title, section, duration });
+    return res.status(200).json({ ok: true, id, title, section, duration, createdAt: fileCreatedAt });
   } catch (e: any) {
     try { fs.unlinkSync(file.filepath); } catch {}
     return res.status(500).json({ error: 'pipeline failed', detail: e.message });

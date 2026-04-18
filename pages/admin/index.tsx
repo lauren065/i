@@ -101,6 +101,9 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
       fd.append('title', form.title);
       fd.append('section', form.section);
       fd.append('file', form.file);
+      if (form.file.lastModified) {
+        fd.append('fileLastModified', String(form.file.lastModified));
+      }
       const xhr = new XMLHttpRequest();
       xhr.upload.addEventListener('progress', (ev) => {
         if (ev.lengthComputable) setProgress((ev.loaded / ev.total) * 100);
@@ -165,6 +168,7 @@ function AdminDashboard({ admin, initialTracks }: { admin: AdminClaims; initialT
     fd.append('trackId', trackId);
     fd.append('file', file);
     if (note) fd.append('note', note);
+    if (file.lastModified) fd.append('fileLastModified', String(file.lastModified));
     const r = await fetch('/api/admin/upload', { method: 'POST', body: fd });
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
